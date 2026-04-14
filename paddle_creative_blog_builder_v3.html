@@ -124,6 +124,18 @@ textarea { min-height: 85px; }
 .btn-primary:hover { background: var(--teal-dark); border-color: var(--teal-dark); }
 .btn-success { background: var(--mint-bg); color: var(--mint-text); border-color: #9addd9; }
 
+/* Share UI */
+.share-bar { display: none; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin-bottom: 1.5rem; }
+.share-bar.visible { display: flex; }
+.share-bar-label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+.share-url { flex: 1; font-size: 12px; color: var(--navy); font-family: monospace; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 5px 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.share-copy-btn { padding: 5px 12px; font-size: 11px; font-weight: 600; background: var(--teal); color: #fff; border: 1px solid var(--teal); border-radius: 6px; cursor: pointer; font-family: inherit; white-space: nowrap; transition: background 0.15s; }
+.share-copy-btn:hover { background: var(--teal-dark); }
+
+/* Loaded-from-session banner */
+.session-banner { display: none; align-items: center; gap: 10px; background: #EAE0F8; border: 1px solid var(--border2); border-radius: 10px; padding: 10px 14px; margin-bottom: 1rem; font-size: 13px; color: var(--navy); }
+.session-banner.visible { display: flex; }
+.session-banner strong { font-weight: 700; }
 
 /* Output */
 .output-box {
@@ -220,6 +232,18 @@ textarea { min-height: 85px; }
 
   <div class="progress-bar-wrap">
     <div class="progress-bar" id="progress" style="width:20%"></div>
+  </div>
+
+  <div class="session-banner" id="session-banner">
+    <span>&#128279;</span>
+    <span><strong>Shared session loaded.</strong> Scroll through the stages to review content, or continue from where it left off.</span>
+    <button onclick="document.getElementById('session-banner').classList.remove('visible')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;line-height:1">&#x2715;</button>
+  </div>
+
+  <div class="share-bar" id="share-bar">
+    <span class="share-bar-label">Share link</span>
+    <span class="share-url" id="share-url"></span>
+    <button class="share-copy-btn" onclick="copyShareLink()">Copy link</button>
   </div>
 
   <div class="stage-nav">
@@ -566,6 +590,210 @@ const AUTHOR_DATA = {
 
 
 
+// ── Session save / load ──────────────────────────────────────────────────────
+
+async function saveSnapshot() {
+  try {
+    const res = await fetch('/api/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ state })
+    });
+    const data = await res.json();
+    if (!data.id) return;
+    const url = `${location.origin}/?s=${data.id}`;
+    history.replaceState(null, '', `?s=${data.id}`);
+    document.getElementById('share-url').textContent = url;
+    document.getElementById('share-bar').classList.add('visible');
+  } catch(e) {
+    console.warn('Could not save session:', e.message);
+  }
+}
+
+function copyShareLink() {
+  const url = document.getElementById('share-url').textContent;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.querySelector('.share-copy-btn');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 1800);
+  });
+}
+
+async function loadSnapshot() {
+  const params = new URLSearchParams(location.search);
+  const id = params.get('s');
+  if (!id) return;
+  try {
+    const res = await fetch(`/api/load?id=${encodeURIComponent(id)}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.state) return;
+    restoreState(data.state);
+    const url = `${location.origin}/?s=${id}`;
+    document.getElementById('share-url').textContent = url;
+    document.getElementById('share-bar').classList.add('visible');
+    document.getElementById('session-banner').classList.add('visible');
+  } catch(e) {
+    console.warn('Could not load session:', e.message);
+  }
+}
+
+function restoreState(saved) {
+  Object.assign(state, saved);
+
+  // Stage 1 form fields
+  const set = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.value = v; };
+  set('inp-title',    state.title);
+  set('inp-overview', state.overview);
+  set('inp-words',    state.words);
+  set('inp-type',     state.type);
+  set('inp-audience', state.audience);
+  set('inp-keyword',  state.keyword);
+  set('inp-author',   state.authorKey);
+  set('inp-extra',    state.extra);
+
+  let lastStage = 1;
+
+  // Stage 2: blog post content
+  if (state.content) {
+    document.getElementById('out-content').textContent = state.content;
+    document.getElementById('btn-stage3').disabled = false;
+    document.getElementById('snav2').classList.add('done');
+    lastStage = 2;
+  }
+
+  // Stage 3: linked content
+  if (state.linkedContent) {
+    document.getElementById('out-linked').textContent = state.linkedContent;
+    // Restore link opportunities list
+    const listEl = document.getElementById('links-list');
+    const opps = state.linkOpps || [];
+    if (listEl) {
+      listEl.innerHTML = opps.length
+        ? opps.map(l => `<div class="link-item"><div style="flex:1"><span class="link-badge">\u2192 ${l.url||'internal page'}</span><strong style="display:block;margin-top:5px">"${l.anchor}"</strong><span style="color:#7A7898;font-size:12px">${l.reason}</span></div></div>`).join('')
+        : '<p style="font-size:13px;color:#7A7898">No internal link opportunities were identified.</p>';
+    }
+    const linksCard = document.getElementById('links-results-card');
+    if (linksCard) linksCard.classList.remove('hidden');
+    document.getElementById('btn-stage4').disabled = false;
+    document.getElementById('snav3').classList.add('done');
+    lastStage = 3;
+  }
+
+  // Stage 4: scores
+  if (state.scores) {
+    renderReviewResults(state.scores);
+    document.getElementById('review-results').classList.remove('hidden');
+    document.getElementById('btn-stage5').disabled = false;
+    document.getElementById('snav4').classList.add('done');
+    lastStage = 4;
+  }
+
+  // Stage 5: refined content
+  if (state.refinedContent) {
+    document.getElementById('out-refined').textContent = state.refinedContent;
+    document.getElementById('refine-results').classList.remove('hidden');
+    if (state.refinedScores) {
+      const sc = v => v >= 80 ? 'high' : v >= 60 ? 'mid' : 'low';
+      const delta = (k) => {
+        const a = (state.refinedScores[k]||0) - (state.scores[k]||0);
+        return a > 0 ? `<span style="color:#007A76;font-size:11px;margin-left:4px">+${a}</span>` : a < 0 ? `<span style="color:#C0392B;font-size:11px;margin-left:4px">${a}</span>` : `<span style="color:#7A7898;font-size:11px;margin-left:4px">\u2013</span>`;
+      };
+      document.getElementById('rescore-grid').innerHTML = [
+        ['template_score','Template'],['aeo_score','AEO'],['geo_score','GEO'],
+        ['extractability_score','Extractability'],['entity_clarity_score','Entity clarity'],['overall_score','Overall']
+      ].map(([k,label]) => `<div class="score-card"><div class="score-val ${sc(state.refinedScores[k]||0)}">${state.refinedScores[k]||'–'}${delta(k)}</div><div class="score-label">${label}</div></div>`).join('');
+      document.getElementById('rescore-results').classList.remove('hidden');
+    }
+    document.getElementById('btn-stage6').disabled = false;
+    document.getElementById('snav5').classList.add('done');
+    lastStage = 5;
+  }
+
+  // Stage 6: upload template
+  if (state.uploadMeta) {
+    renderUploadUI();
+    document.getElementById('snav6').classList.add('done');
+    lastStage = 6;
+  }
+
+  goStage(lastStage);
+}
+
+function renderReviewResults(scores) {
+  const sc = v => v >= 80 ? 'high' : v >= 60 ? 'mid' : 'low';
+  const set = (id, v) => { const el = document.getElementById(id); if (el) { el.textContent = v; el.className = 'score-val ' + sc(v); } };
+  set('sc-template', scores.template_score);
+  set('sc-aeo',      scores.aeo_score);
+  set('sc-geo',      scores.geo_score);
+  set('sc-extract',  scores.extractability_score);
+  set('sc-entity',   scores.entity_clarity_score);
+  set('sc-overall',  scores.overall_score);
+
+  const findings = scores.template_findings || [];
+  document.getElementById('recs-template').innerHTML = findings.length
+    ? findings.map((r,i) => `<div class="rec-item"><label style="display:flex;align-items:flex-start;gap:10px;width:100%;cursor:pointer"><input type="checkbox" class="rec-checkbox" data-source="template" data-index="${i}" checked style="margin-top:3px;flex-shrink:0;width:15px;height:15px;cursor:pointer"><div style="flex:1"><span style="font-size:12px;font-weight:600;display:block;margin-bottom:2px">${r.criterion||''}</span><span style="font-size:13px">${r.finding}</span></div><span class="rec-source template">Your template</span></label></div>`).join('')
+    : '<p style="color:#7A7898;font-size:13px">No findings.</p>';
+
+  const addRecs = scores.additional_recommendations || [];
+  document.getElementById('recs-claude').innerHTML = addRecs.length
+    ? addRecs.map((r,i) => `<div class="rec-item"><label style="display:flex;align-items:flex-start;gap:10px;width:100%;cursor:pointer"><input type="checkbox" class="rec-checkbox" data-source="claude" data-index="${i}" checked style="margin-top:3px;flex-shrink:0;width:15px;height:15px;cursor:pointer"><span style="font-size:13px;flex:1">${r.text}</span><span class="rec-source claude">Claude</span></label></div>`).join('')
+    : '<p style="color:#7A7898;font-size:13px">No additional recommendations.</p>';
+
+  const wins = scores.quick_wins || [];
+  document.getElementById('quick-wins').innerHTML = wins.length
+    ? wins.map((w,i) => `<div class="checklist-item" style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:#EDE8F5;border-radius:8px;border:1px solid #E2DCF0"><label style="display:flex;align-items:flex-start;gap:8px;width:100%;cursor:pointer"><input type="checkbox" class="rec-checkbox" data-source="quickwin" data-index="${i}" checked style="margin-top:1px;flex-shrink:0;width:15px;height:15px;cursor:pointer"><span style="font-size:12px">${w}</span></label></div>`).join('')
+    : '<p style="color:#7A7898;font-size:13px">No quick wins.</p>';
+
+  const tc = scores.tone;
+  if (tc) {
+    const vClass = tc.verdict === 'PASS' ? 'verdict-pass' : tc.verdict === 'FAIL' ? 'verdict-fail' : 'verdict-notes';
+    document.getElementById('tone-verdict').innerHTML = `<span class="verdict-badge ${vClass}">${tc.verdict}</span>`;
+    if (tc.issues && tc.issues.length) {
+      document.getElementById('tone-issues').innerHTML = tc.issues.map(i => {
+        const quoted = i.quoted || i.quote || i.text || i.excerpt || '';
+        const explanation = i.explanation || i.issue || i.description || i.reason || '';
+        return `<div class="rec-item"><div style="flex:1"><span style="font-size:11px;font-weight:600;color:#7A7898;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:3px">[${i.type||''}]</span><span style="font-size:13px">${quoted ? `<em>\u201c${quoted}\u201d</em> \u2013 ` : ''}${explanation}</span></div></div>`;
+      }).join('');
+      document.getElementById('tone-issues-wrap').classList.remove('hidden');
+    }
+    if (tc.rewrites && tc.rewrites.length) {
+      document.getElementById('tone-rewrites').innerHTML = tc.rewrites.map(r => {
+        const original = r.original || r.before || r.text || '';
+        const rewrite  = r.rewrite  || r.after  || r.replacement || r.revised || '';
+        return `<div style="padding:10px 12px;background:#EDE8F5;border:1px solid #E2DCF0;border-radius:8px;margin-bottom:8px;font-size:13px"><div style="color:#C0392B;margin-bottom:5px"><strong>Before:</strong> ${original}</div><div style="color:#007A76"><strong>After:</strong> ${rewrite}</div></div>`;
+      }).join('');
+      document.getElementById('tone-rewrites-wrap').classList.remove('hidden');
+    }
+    if (tc.whats_working && tc.whats_working.length) {
+      document.getElementById('tone-working').innerHTML = tc.whats_working.map(w =>
+        `<div style="display:flex;gap:8px;padding:5px 0;font-size:13px;align-items:flex-start"><span style="color:#007A76;font-weight:700;flex-shrink:0">\u2713</span><span>${w}</span></div>`
+      ).join('');
+      document.getElementById('tone-working-wrap').classList.remove('hidden');
+    }
+  }
+}
+
+function renderUploadUI() {
+  if (state.templateFields) {
+    document.getElementById('upload-template').innerHTML = state.templateFields.map(f => `
+      <div class="upload-field">
+        <div class="field-label" style="display:flex;justify-content:space-between">
+          <span>${f.label}</span>
+          ${f.count !== undefined ? `<span style="font-size:10px;color:${f.count > (f.label.includes('Meta Title') ? 60 : f.label.includes('Tile') ? 65 : 180) ? '#C0392B' : '#007A76'}">${f.count} chars</span>` : ''}
+        </div>
+        ${f.note ? `<div style="font-size:11px;color:#7A7898;margin-bottom:4px">${f.note}</div>` : ''}
+        <div class="field-val" style="${['content_part1','content_part2'].includes(f.label.toLowerCase().replace(/\s+/g,'_')) ? 'font-family:monospace;font-size:12px;max-height:200px;overflow-y:auto;background:#f0f0eb;padding:8px;border-radius:4px;' : ''}">${f.value||'–'}</div>
+      </div>`).join('');
+  }
+  if (state.sheetsText)  document.getElementById('out-sheets').textContent    = state.sheetsText;
+  if (state.htmlPart1)   document.getElementById('out-html-part1').textContent = state.htmlPart1;
+  if (state.htmlPart2)   document.getElementById('out-html-part2').textContent = state.htmlPart2;
+}
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+
 function goStage(n) {
   document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===n-1));
   document.querySelectorAll('.stage-btn').forEach((b,i) => b.classList.toggle('active', i===n-1));
@@ -700,6 +928,7 @@ Write it now — no preamble.`;
     state.content = (await callClaude(sys, prompt)).replace(/—/g, '–');
     document.getElementById('out-content').textContent = state.content;
     document.getElementById('btn-stage3').disabled = false;
+    saveSnapshot();
   } catch(e) {
     document.getElementById('out-content').innerHTML = `<span style="color:#C0392B">Error: ${e.message}</span>`;
   }
@@ -770,6 +999,7 @@ ${JSON.stringify(state.linkOpps)}`;
     state.linkedContent = await callClaude(sys2, prompt2);
     document.getElementById('out-linked').textContent = state.linkedContent;
     document.getElementById('btn-stage4').disabled = false;
+    saveSnapshot();
   } catch(e) {
     document.getElementById('links-list').innerHTML = `<span style="color:#C0392B">Error: ${e.message}</span>`;
   }
@@ -1050,6 +1280,7 @@ Rules: verdict must be "PASS", "FAIL", or "PASS WITH NOTES". If PASS, return emp
       ? '✓ Scored against your template + Claude\'s additional checks.'
       : '✓ No template provided — scored against general AEO/GEO best practices + Claude\'s checks.';
     document.getElementById('btn-stage5').disabled = false;
+    saveSnapshot();
 
   } catch(e) {
     document.getElementById('review-results').classList.remove('hidden');
@@ -1185,6 +1416,7 @@ ${meta.content_part2}`);
     document.getElementById('upload-template').innerHTML = `<span style="color:#C0392B">Error: ${e.message}</span>`;
   }
   showSpinner('spin6', false);
+  saveSnapshot();
 }
 
 async function runRefineAgain() {
@@ -1383,6 +1615,7 @@ Include 4-6 recommendations. Focus on what would make the biggest difference to 
       document.getElementById('rescore-status').textContent = 'Could not rescore — ' + e.message;
     }
     document.getElementById('btn-stage6').disabled = false;
+    saveSnapshot();
 
     // ── Show refine-again card with fresh recommendations ──
     try {
@@ -1438,8 +1671,15 @@ function startOver() {
   document.getElementById('btn-stage6') && (document.getElementById('btn-stage6').disabled = true);
   document.getElementById('btn-run-review').disabled = false;
   document.getElementById('btn-run-refine') && (document.getElementById('btn-run-refine').disabled = false);
+  history.replaceState(null, '', '/');
+  const sb = document.getElementById('session-banner');
+  if (sb) sb.classList.add('hidden');
+  const bar = document.getElementById('share-bar');
+  if (bar) bar.classList.add('hidden');
   goStage(1);
 }
+
+document.addEventListener('DOMContentLoaded', loadSnapshot);
 
 </script>
 </body>
