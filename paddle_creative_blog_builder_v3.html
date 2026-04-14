@@ -403,7 +403,7 @@ textarea { min-height: 85px; }
       </div>
 
       <div class="card" id="tone-check-card">
-        <h2>Paddle voice check</h2>
+        <h2>Paddle Creative Tone of Voice Check</h2>
         <p class="desc">Reviewed against the Paddle Creative tone of voice — banned language, swap test, positioning, British English, and channel register.</p>
         <div id="tone-verdict" style="margin-bottom:1rem">Waiting...</div>
         <div id="tone-issues-wrap" class="hidden">
@@ -970,14 +970,18 @@ Return valid JSON only — no markdown, no explanation outside the JSON.`;
 BLOG POST:
 ${state.linkedContent}
 
-Return JSON:
+Return valid JSON only — no markdown, no text outside the JSON. Use exactly these field names:
 {
-  "verdict": "PASS",
-  "issues": [],
-  "rewrites": [],
-  "whats_working": ["observation 1", "observation 2", "observation 3"]
+  "verdict": "PASS WITH NOTES",
+  "issues": [
+    {"type": "EM_DASH", "quoted": "exact quoted text from the post", "explanation": "one sentence explaining the problem"}
+  ],
+  "rewrites": [
+    {"original": "exact original text from the post", "rewrite": "corrected version"}
+  ],
+  "whats_working": ["specific observation 1", "specific observation 2", "specific observation 3"]
 }
-Use verdict "PASS" if no issues, "FAIL" if one or more hard fails, "PASS WITH NOTES" if minor things worth fixing. If verdict is PASS, return empty arrays for issues and rewrites. Always include 2-4 whats_working items. For issues use types like: EM_DASH, AMERICAN_SPELLING, JARGON, SWAP_TEST, POSITIONING, CORPORATE_FILLER, SENTENCE_LENGTH, CROWD_ADDRESS, ROBOTIC_CONNECTOR, FEAR_SELLING, WEBOPS_TERM.`;
+Rules: verdict must be "PASS", "FAIL", or "PASS WITH NOTES". If PASS, return empty arrays for issues and rewrites. Always include 2-4 whats_working items. Issue types: EM_DASH, AMERICAN_SPELLING, JARGON, SWAP_TEST, POSITIONING, CORPORATE_FILLER, SENTENCE_LENGTH, CROWD_ADDRESS, ROBOTIC_CONNECTOR, FEAR_SELLING, WEBOPS_TERM.`;
 
     const rawTone = await callClaude(TONE_CHECKER_SYSTEM, toneUserPrompt);
     let toneCheck;
@@ -1019,15 +1023,19 @@ Use verdict "PASS" if no issues, "FAIL" if one or more hard fails, "PASS WITH NO
     const vClass = tc.verdict === 'PASS' ? 'verdict-pass' : tc.verdict === 'FAIL' ? 'verdict-fail' : 'verdict-notes';
     document.getElementById('tone-verdict').innerHTML = `<span class="verdict-badge ${vClass}">${tc.verdict}</span>`;
     if (tc.issues && tc.issues.length) {
-      document.getElementById('tone-issues').innerHTML = tc.issues.map(i =>
-        `<div class="rec-item"><div style="flex:1"><span style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:3px">[${i.type}]</span><span style="font-size:13px"><em>\u201c${i.quoted}\u201d</em> \u2013 ${i.explanation}</span></div></div>`
-      ).join('');
+      document.getElementById('tone-issues').innerHTML = tc.issues.map(i => {
+        const quoted = i.quoted || i.quote || i.text || i.excerpt || '';
+        const explanation = i.explanation || i.issue || i.description || i.reason || '';
+        return `<div class="rec-item"><div style="flex:1"><span style="font-size:11px;font-weight:600;color:#7A7898;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:3px">[${i.type || ''}]</span><span style="font-size:13px">${quoted ? `<em>\u201c${quoted}\u201d</em> \u2013 ` : ''}${explanation}</span></div></div>`;
+      }).join('');
       document.getElementById('tone-issues-wrap').classList.remove('hidden');
     }
     if (tc.rewrites && tc.rewrites.length) {
-      document.getElementById('tone-rewrites').innerHTML = tc.rewrites.map(r =>
-        `<div style="padding:10px 12px;background:#EDE8F5;border:1px solid #E2DCF0;border-radius:8px;margin-bottom:8px;font-size:13px"><div style="color:#c0392b;margin-bottom:5px"><strong>Before:</strong> ${r.original}</div><div style="color:#2d7a4f"><strong>After:</strong> ${r.rewrite}</div></div>`
-      ).join('');
+      document.getElementById('tone-rewrites').innerHTML = tc.rewrites.map(r => {
+        const original = r.original || r.before || r.text || '';
+        const rewrite = r.rewrite || r.after || r.replacement || r.revised || '';
+        return `<div style="padding:10px 12px;background:#EDE8F5;border:1px solid #E2DCF0;border-radius:8px;margin-bottom:8px;font-size:13px"><div style="color:#C0392B;margin-bottom:5px"><strong>Before:</strong> ${original}</div><div style="color:#007A76"><strong>After:</strong> ${rewrite}</div></div>`;
+      }).join('');
       document.getElementById('tone-rewrites-wrap').classList.remove('hidden');
     }
     if (tc.whats_working && tc.whats_working.length) {
