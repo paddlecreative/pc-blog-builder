@@ -73,13 +73,6 @@ body { font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif
 .header-text h1 em { font-style: normal; }
 .header-text p { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: 'Inter Tight', sans-serif; }
 
-/* API Key banner */
-.api-banner { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; }
-.api-banner label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); white-space: nowrap; }
-.api-banner input { flex: 1; padding: 7px 10px; font-size: 13px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface2); font-family: monospace; color: var(--navy); }
-.api-banner input:focus { outline: none; border-color: var(--teal); background: var(--surface); }
-.api-status { font-size: 12px; color: var(--muted); white-space: nowrap; }
-.api-status.ok { color: var(--mint-text); }
 
 /* Progress bar */
 .progress-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 1.5rem; }
@@ -131,8 +124,6 @@ textarea { min-height: 85px; }
 .btn-primary:hover { background: var(--teal-dark); border-color: var(--teal-dark); }
 .btn-success { background: var(--mint-bg); color: var(--mint-text); border-color: #9addd9; }
 
-/* Inline confirm/show key buttons */
-.api-banner button:not([class]) { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-family: inherit; }
 
 /* Output */
 .output-box {
@@ -226,14 +217,6 @@ textarea { min-height: 85px; }
     </div>
   </div>
 
-  <!-- API Key input -->
-  <div class="api-banner">
-    <label>Anthropic API Key</label>
-    <input type="password" id="api-key" placeholder="sk-ant-..." oninput="checkKey(this.value)" onchange="checkKey(this.value)" onpaste="setTimeout(()=>checkKey(document.getElementById('api-key').value),50)" onkeyup="checkKey(this.value)">
-    <button id="btn-show-key" onclick="toggleKeyVisibility()" style="padding:5px 10px;font-size:11px;background:#EDE8F5;border:1px solid #E2DCF0;border-radius:6px;cursor:pointer;color:#7A7898;font-family:inherit;white-space:nowrap">Show</button>
-    <button onclick="confirmKey()" style="padding:5px 12px;font-size:11px;background:#00B8B0;color:#fff;border:1px solid #00B8B0;border-radius:6px;cursor:pointer;font-family:inherit;white-space:nowrap;font-weight:600">Confirm</button>
-    <span class="api-status" id="api-status">Not set</span>
-  </div>
 
   <div class="progress-bar-wrap">
     <div class="progress-bar" id="progress" style="width:20%"></div>
@@ -581,36 +564,6 @@ const AUTHOR_DATA = {
   }
 };
 
-function getKey() { return document.getElementById('api-key').value.trim(); }
-function confirmKey() {
-  const v = document.getElementById('api-key').value.trim();
-  if (!v) { alert('Please paste your Anthropic API key into the field first.'); return; }
-  const valid = v.startsWith('sk-');
-  const el = document.getElementById('api-status');
-  if (valid) {
-    el.textContent = '✓ Key set';
-    el.className = 'api-status ok';
-    alert('API key confirmed! You\'re ready to generate.');
-  } else {
-    el.textContent = 'Invalid key format';
-    el.className = 'api-status';
-    alert('That doesn\'t look right. Your Anthropic API key should start with sk-ant-');
-  }
-}
-
-function toggleKeyVisibility() {
-  const inp = document.getElementById('api-key');
-  const btn = document.getElementById('btn-show-key');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-  btn.textContent = inp.type === 'password' ? 'Show' : 'Hide';
-}
-
-function checkKey(v) {
-  const el = document.getElementById('api-status');
-  const valid = v.startsWith('sk-ant-') || v.startsWith('sk-');
-  el.textContent = valid ? '✓ Key set' : (v.length > 0 ? 'Invalid key format' : 'Not set');
-  el.className = 'api-status' + (valid ? ' ok' : '');
-}
 
 
 function goStage(n) {
@@ -626,25 +579,13 @@ function showSpinner(id, show) {
 }
 
 async function callClaude(systemPrompt, userPrompt) {
-  const key = getKey();
-  if (!key) throw new Error('Please enter your Anthropic API key at the top of the page.');
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await fetch('/api/claude', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      max_tokens: 4000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }]
-    })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ system: systemPrompt, user: userPrompt })
   });
   const data = await res.json();
-  if (!data.content) throw new Error(data.error?.message || 'API error — check your key and try again.');
+  if (!data.content) throw new Error(data.error?.message || 'API error — please try again.');
   return data.content.map(b => b.text || '').join('');
 }
 
@@ -1492,6 +1433,7 @@ function startOver() {
   document.getElementById('btn-run-refine') && (document.getElementById('btn-run-refine').disabled = false);
   goStage(1);
 }
+
 </script>
 </body>
 </html>
