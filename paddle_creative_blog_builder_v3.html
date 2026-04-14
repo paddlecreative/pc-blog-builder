@@ -96,6 +96,10 @@ textarea { min-height: 85px; }
 .rec-source { font-size: 10px; padding: 2px 8px; border-radius: 10px; white-space: nowrap; font-weight: 600; margin-left: auto; flex-shrink: 0; margin-top: 1px; }
 .rec-source.template { background: #e8f0fb; color: #2c5fa8; }
 .rec-source.claude { background: #f0ede6; color: #888; border: 1px solid #e0ddd6; }
+.verdict-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.verdict-pass { background: #e8f5ee; color: #2d7a4f; border: 1px solid #b8dfc9; }
+.verdict-notes { background: #fff8e6; color: #b5720a; border: 1px solid #f0d080; }
+.verdict-fail { background: #fdecea; color: #c0392b; border: 1px solid #f5b7b1; }
 
 .upload-field { background: #f9f8f5; border: 1px solid #e0ddd6; border-radius: 8px; padding: 10px 13px; margin-bottom: 8px; }
 .upload-field .field-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-bottom: 4px; }
@@ -326,6 +330,24 @@ textarea { min-height: 85px; }
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div class="rec-section-title" style="margin-bottom:0">Additional recommendations</div><div style="display:flex;gap:6px"><button onclick="toggleAllRecs('claude',true)" class="copy-btn">Select all</button><button onclick="toggleAllRecs('claude',false)" class="copy-btn">Deselect all</button></div></div>
         <div id="recs-claude">Waiting...</div>
+      </div>
+
+      <div class="card" id="tone-check-card">
+        <h2>Paddle voice check</h2>
+        <p class="desc">Reviewed against the Paddle Creative tone of voice — banned language, swap test, positioning, British English, and channel register.</p>
+        <div id="tone-verdict" style="margin-bottom:1rem">Waiting...</div>
+        <div id="tone-issues-wrap" class="hidden">
+          <div class="rec-section-title" style="margin-bottom:8px">Issues</div>
+          <div id="tone-issues" style="margin-bottom:1rem"></div>
+        </div>
+        <div id="tone-rewrites-wrap" class="hidden">
+          <div class="rec-section-title" style="margin-bottom:8px">Rewrites</div>
+          <div id="tone-rewrites" style="margin-bottom:1rem"></div>
+        </div>
+        <div id="tone-working-wrap" class="hidden">
+          <div class="rec-section-title" style="margin-bottom:8px">What's working</div>
+          <div id="tone-working"></div>
+        </div>
       </div>
 
       <div class="card">
@@ -586,7 +608,27 @@ async function runStage2() {
       'BAD headline: Streamline Your Website Updates with Webflow.',
       'GOOD headline: Tired of begging devs for plugin updates? Meet Webflow.',
       '',
-      'PADDLE CREATIVE VOICE: Do good work and let it do the talking, create something you are proud of but avoid the ego, celebrate progress while striving for improvement, and remember — it is not brain surgery, it is marketing. Do not take everything too seriously.'
+      'PADDLE CREATIVE VOICE: Do good work and let it do the talking, create something you are proud of but avoid the ego, celebrate progress while striving for improvement, and remember — it is not brain surgery, it is marketing. Do not take everything too seriously.',
+      '',
+      'HARD RULES — NEVER VIOLATE:',
+      '- Never use em dashes (—). Use en dashes (–), commas, or a full stop instead.',
+      '- British English always: colour, optimise, recognise, centre, travelling, fulfil, programme, behaviour.',
+      '- Banned connectors — replace with plain language: consequently, furthermore, in conclusion, it\'s worth noting that, subsequently, in the realm of, a testament to, delve into, this comprehensive guide.',
+      '- Banned words/phrases: ensure (use "make sure"), utilise (use "use"), leverage (use "use"), facilitate (use "help"), seamless, world-class, cutting-edge, future-proof, exceptional experiences, trusted partner, end-to-end solutions, tailored solutions, we are committed to.',
+      '- No exclamation marks unless one per piece maximum.',
+      '- No sentences over 30 words.',
+      '- Never position Paddle Creative as Webflow-only. We are Webflow-primary but not exclusive. Do not say "our Webflow team" or "Webflow agency".',
+      '- Never describe Paddle as a talent marketplace, staff augmentation, or outsourcing service. We are a specialist embedded team.',
+      '- Never use the term "WebOps" — that is a competitor\'s term (Flow Ninja).',
+      '- No unverifiable claims: award-winning, best-in-class, world-class.',
+      '- No fear-based selling: "more important than ever", "don\'t risk it", "with so much uncertainty".',
+      '',
+      'SWAP TEST: Every sentence must pass — if a competitor (Growmodo, Superside, Flow Ninja, a generic Webflow agency) could publish it unchanged, rewrite it with a specific Paddle Creative point of view.',
+      '',
+      'VOICE:',
+      '- Speak to one person ("you", "your") — never address a crowd as "marketers", "teams", or "businesses".',
+      '- Problem-first framing: lead with the reader\'s problem before our credentials.',
+      '- AI is in every Paddler\'s armoury — it is how we work, not what we sell. We are not an "AI agency".'
     ].join('\n');
     const tovBlock = '\n\n' + PADDLE_TOV;
     const sys = `You are a senior content strategist at Paddle Creative, a bold and ambitious brand and creative agency. Your writing is clear, confident and never corporate — it sounds like a smart human, not a bot. You specialise in AEO (Answer Engine Optimisation) and GEO (Generative Engine Optimisation) — writing content that AI systems like ChatGPT, Perplexity and Google AI Overviews can easily extract, quote and recommend.
@@ -848,6 +890,74 @@ Include 4-6 additional recommendations and 3-5 quick wins.`;
 
     state.scores = { ...scores, ...claudeChecks };
 
+    // Tone check — Paddle Creative brand voice
+    const TONE_CHECKER_SYSTEM = `You are the Paddle Creative tone-of-voice checker. Review copy against the Paddle Creative tone of voice and return a structured verdict.
+
+Who Paddle Creative Is:
+Paddle Creative is a specialist marketing team — Paddlers — who embed into B2B scale-up marketing teams. Not a traditional agency. Not a talent marketplace. A focused crew with a point of view.
+The model is built around three pillars: Build (websites, web apps, UI/UX — Webflow-primary, not exclusive), Optimise (AEO, SEO, CRO — built for the AI search era), Enable (AI tools, workflows and content pipelines). Clients are B2B scale-ups and growth-stage startups.
+The positioning line: "The specialist marketing team you can't justify hiring. Without the overhead."
+
+Pass/Fail Criteria — flag any of the following as a FAIL:
+
+Structure and framing:
+- Opens with "We are...", "Paddle Creative is...", or any variant that leads with the brand, not the reader's problem
+- Could belong to a competitor without changing meaning (swap test: would this work for Growmodo, Superside, Flow Ninja, or a generic Webflow agency?)
+- Positions Paddle as a Webflow-only agency — we are Webflow-primary, not Webflow-exclusive
+- Describes Paddle as a talent marketplace or staff augmentation service
+- Makes a claim that can't be backed up: "award-winning", "best-in-class", "seamless", "world-class", "cutting-edge", "future-proof", "we are committed to..."
+- Uses fear to sell: "more important than ever", "don't risk it", "with so much uncertainty"
+- Mentions WebOps — this is a competitor term (Flow Ninja) and should be avoided
+
+Language:
+- Sentences over 30 words
+- More than one exclamation mark in the piece
+- American English spellings: organize/color/center/realize/traveling/fulfill/program/behavior and equivalents
+- Em dashes (—) anywhere. Commas, full stops, or colons instead.
+- Robotic connectors: consequently, furthermore, in conclusion, it's worth noting that, subsequently, in the realm of, a testament to, delve into, this comprehensive guide, ensure (use "make sure"), utilise (use "use"), leverage (use "use"), facilitate (use "help")
+- Corporate filler: exceptional experiences, trusted partner, end-to-end solutions, tailored solutions, seamless, we are committed to
+
+Voice:
+- Speaks to a crowd rather than one person (uses "marketers", "teams", "businesses" instead of "you")
+- Reads like it was written by AI: hedging, over-qualifying, formal connecting phrases
+- Undersells the AI angle — AI is core to how Paddlers work, not a bolt-on
+- Oversells the AI angle — we're not an "AI agency", AI is in our armoury, not our identity
+
+Positive voice markers — note these in whats_working:
+- Second person ("you", "your") — one real person
+- Short sentences (under 20 words)
+- Problem-first framing
+- Anglo-Saxon word choices over Latin-rooted formality
+- Specific claims over vague trust-building
+- British English throughout
+- Playfulness that serves the point
+- A headline or opening that would make someone pause
+- Reflects the Paddler model — embedded, specialist, outcome-led
+
+Channel for blog/article: Informative but human. No academic tone.
+
+Return valid JSON only — no markdown, no explanation outside the JSON.`;
+
+    const toneUserPrompt = `Run a Paddle Creative tone check on this blog post. Channel: Blog / article.
+
+BLOG POST:
+${state.linkedContent}
+
+Return JSON:
+{
+  "verdict": "PASS",
+  "issues": [],
+  "rewrites": [],
+  "whats_working": ["observation 1", "observation 2", "observation 3"]
+}
+Use verdict "PASS" if no issues, "FAIL" if one or more hard fails, "PASS WITH NOTES" if minor things worth fixing. If verdict is PASS, return empty arrays for issues and rewrites. Always include 2-4 whats_working items. For issues use types like: EM_DASH, AMERICAN_SPELLING, JARGON, SWAP_TEST, POSITIONING, CORPORATE_FILLER, SENTENCE_LENGTH, CROWD_ADDRESS, ROBOTIC_CONNECTOR, FEAR_SELLING, WEBOPS_TERM.`;
+
+    const rawTone = await callClaude(TONE_CHECKER_SYSTEM, toneUserPrompt);
+    let toneCheck;
+    try { toneCheck = JSON.parse(rawTone.replace(/```json|```/g, '')); }
+    catch { toneCheck = { verdict: 'PASS WITH NOTES', issues: [], rewrites: [], whats_working: ['Could not parse tone check — please try again.'] }; }
+    state.scores.tone = toneCheck;
+
     const sc = v => v >= 80 ? 'high' : v >= 60 ? 'mid' : 'low';
     document.getElementById('sc-template').textContent = scores.template_score;
     document.getElementById('sc-template').className = 'score-val '+sc(scores.template_score);
@@ -876,6 +986,29 @@ Include 4-6 additional recommendations and 3-5 quick wins.`;
     document.getElementById('quick-wins').innerHTML = wins.length
       ? wins.map((w,i) => `<div class="checklist-item" style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:#f9f8f5;border-radius:8px;border:1px solid #e0ddd6"><label style="display:flex;align-items:flex-start;gap:8px;width:100%;cursor:pointer"><input type="checkbox" class="rec-checkbox" data-source="quickwin" data-index="${i}" checked style="margin-top:1px;flex-shrink:0;width:15px;height:15px;cursor:pointer"><span style="font-size:12px">${w}</span></label></div>`).join('')
       : '<p style="color:#888;font-size:13px">No quick wins generated.</p>';
+
+    // Render tone check card
+    const tc = toneCheck;
+    const vClass = tc.verdict === 'PASS' ? 'verdict-pass' : tc.verdict === 'FAIL' ? 'verdict-fail' : 'verdict-notes';
+    document.getElementById('tone-verdict').innerHTML = `<span class="verdict-badge ${vClass}">${tc.verdict}</span>`;
+    if (tc.issues && tc.issues.length) {
+      document.getElementById('tone-issues').innerHTML = tc.issues.map(i =>
+        `<div class="rec-item"><div style="flex:1"><span style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:3px">[${i.type}]</span><span style="font-size:13px"><em>\u201c${i.quoted}\u201d</em> \u2013 ${i.explanation}</span></div></div>`
+      ).join('');
+      document.getElementById('tone-issues-wrap').classList.remove('hidden');
+    }
+    if (tc.rewrites && tc.rewrites.length) {
+      document.getElementById('tone-rewrites').innerHTML = tc.rewrites.map(r =>
+        `<div style="padding:10px 12px;background:#f9f8f5;border:1px solid #e0ddd6;border-radius:8px;margin-bottom:8px;font-size:13px"><div style="color:#c0392b;margin-bottom:5px"><strong>Before:</strong> ${r.original}</div><div style="color:#2d7a4f"><strong>After:</strong> ${r.rewrite}</div></div>`
+      ).join('');
+      document.getElementById('tone-rewrites-wrap').classList.remove('hidden');
+    }
+    if (tc.whats_working && tc.whats_working.length) {
+      document.getElementById('tone-working').innerHTML = tc.whats_working.map(w =>
+        `<div style="display:flex;gap:8px;padding:5px 0;font-size:13px;align-items:flex-start"><span style="color:#2d7a4f;font-weight:700;flex-shrink:0">\u2713</span><span>${w}</span></div>`
+      ).join('');
+      document.getElementById('tone-working-wrap').classList.remove('hidden');
+    }
 
     document.getElementById('review-results').classList.remove('hidden');
     document.getElementById('template-notice').textContent = template
