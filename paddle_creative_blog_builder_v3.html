@@ -4,124 +4,161 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Paddle Creative — Blog Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
 <style>
+/* Paddle Creative brand tokens */
+:root {
+  --navy:      #0D0D4A;
+  --teal:      #00B8B0;
+  --teal-dark: #009990;
+  --orchid:    #DA8AEF;
+  --bg:        #F5F3F8;
+  --surface:   #FFFFFF;
+  --surface2:  #EDE8F5;
+  --border:    #E2DCF0;
+  --border2:   #D4CCEC;
+  --muted:     #7A7898;
+  --text:      #0D0D4A;
+  --mint-bg:   #D4F5F2;
+  --mint-text: #007A76;
+  --amber:     #B5720A;
+  --red:       #C0392B;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; color: #1a1a1a; font-size: 14px; line-height: 1.6; }
+body { font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
 .app { max-width: 820px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
-.header { display: flex; align-items: center; gap: 14px; margin-bottom: 2rem; padding-bottom: 1.25rem; border-bottom: 1px solid #e0ddd6; }
-.logo { width: 36px; height: 36px; background: #1a1a1a; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.logo svg { width: 20px; height: 20px; }
-.header-text h1 { font-size: 17px; font-weight: 600; }
-.header-text p { font-size: 12px; color: #888; margin-top: 1px; }
+
+/* Header */
+.header { display: flex; align-items: center; gap: 14px; margin-bottom: 2rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+.logo { width: 40px; height: 40px; flex-shrink: 0; }
+.logo svg { width: 40px; height: 40px; }
+.header-text h1 { font-size: 17px; font-weight: 700; color: var(--navy); letter-spacing: -0.01em; }
+.header-text p { font-size: 12px; color: var(--muted); margin-top: 1px; }
 
 /* API Key banner */
-.api-banner { background: #fff; border: 1px solid #e0ddd6; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; }
-.api-banner label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #888; white-space: nowrap; }
-.api-banner input { flex: 1; padding: 7px 10px; font-size: 13px; border: 1px solid #ddd; border-radius: 7px; background: #f9f8f5; font-family: monospace; }
-.api-banner input:focus { outline: none; border-color: #1a1a1a; }
-.api-status { font-size: 12px; color: #888; white-space: nowrap; }
-.api-status.ok { color: #2d7a4f; }
+.api-banner { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; }
+.api-banner label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); white-space: nowrap; }
+.api-banner input { flex: 1; padding: 7px 10px; font-size: 13px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface2); font-family: monospace; color: var(--navy); }
+.api-banner input:focus { outline: none; border-color: var(--teal); background: var(--surface); }
+.api-status { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.api-status.ok { color: var(--mint-text); }
 
-.progress-bar-wrap { height: 3px; background: #e0ddd6; border-radius: 2px; margin-bottom: 1.5rem; }
-.progress-bar { height: 3px; background: #1a1a1a; border-radius: 2px; transition: width 0.4s ease; }
+/* Progress bar */
+.progress-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 1.5rem; }
+.progress-bar { height: 3px; background: var(--teal); border-radius: 2px; transition: width 0.4s ease; }
 
-.stage-nav { display: flex; margin-bottom: 1.5rem; border: 1px solid #e0ddd6; border-radius: 10px; overflow: hidden; background: #fff; }
-.stage-btn { flex: 1; padding: 10px 4px; font-size: 11px; font-weight: 500; background: transparent; border: none; color: #999; cursor: pointer; text-align: center; transition: all 0.15s; border-right: 1px solid #e0ddd6; font-family: inherit; }
+/* Stage nav */
+.stage-nav { display: flex; margin-bottom: 1.5rem; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.stage-btn { flex: 1; padding: 10px 4px; font-size: 11px; font-weight: 600; background: transparent; border: none; color: var(--muted); cursor: pointer; text-align: center; transition: all 0.15s; border-right: 1px solid var(--border); font-family: inherit; letter-spacing: 0.02em; text-transform: uppercase; }
 .stage-btn:last-child { border-right: none; }
-.stage-btn:hover { background: #f5f4f0; color: #1a1a1a; }
-.stage-btn.active { background: #1a1a1a; color: #fff; }
-.stage-btn.done { color: #2d7a4f; }
-.stage-btn .stage-num { display: block; font-size: 20px; font-weight: 600; margin-bottom: 1px; }
+.stage-btn:hover { background: var(--surface2); color: var(--navy); }
+.stage-btn.active { background: var(--navy); color: #fff; }
+.stage-btn.done { color: var(--teal); }
+.stage-btn .stage-num { display: block; font-size: 20px; font-weight: 700; margin-bottom: 1px; letter-spacing: -0.02em; text-transform: none; }
 .stage-btn.active .stage-num { color: #fff; }
-.stage-btn.done .stage-num { color: #2d7a4f; }
+.stage-btn.done .stage-num { color: var(--teal); }
 
 .panel { display: none; }
 .panel.active { display: block; }
 
-.card { background: #fff; border: 1px solid #e0ddd6; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
-.card h2 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-.card .desc { font-size: 13px; color: #888; margin-bottom: 1.25rem; }
+/* Cards */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+.card h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; color: var(--navy); letter-spacing: -0.01em; }
+.card .desc { font-size: 13px; color: var(--muted); margin-bottom: 1.25rem; }
 
-label { display: block; font-size: 11px; color: #888; margin-bottom: 5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+/* Forms */
+label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
 input[type=text], textarea, select {
   width: 100%; padding: 9px 11px; font-size: 14px; font-family: inherit;
-  background: #f9f8f5; border: 1px solid #e0ddd6; border-radius: 8px;
-  color: #1a1a1a; resize: vertical; transition: border-color 0.15s;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--navy); resize: vertical; transition: border-color 0.15s;
 }
-input[type=text]:focus, textarea:focus, select:focus { outline: none; border-color: #1a1a1a; background: #fff; }
+input[type=text]:focus, textarea:focus, select:focus { outline: none; border-color: var(--teal); background: var(--surface); }
 textarea { min-height: 85px; }
 .form-row { margin-bottom: 1.1rem; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
+/* Buttons */
 .btn {
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 10px 18px; font-size: 13px; font-weight: 500;
+  padding: 10px 18px; font-size: 13px; font-weight: 600;
   border-radius: 8px; cursor: pointer; transition: all 0.15s;
-  border: 1px solid #e0ddd6; background: #fff; color: #1a1a1a;
-  font-family: inherit;
+  border: 1px solid var(--border); background: var(--surface); color: var(--navy);
+  font-family: inherit; letter-spacing: 0.01em;
 }
-.btn:hover { background: #f5f4f0; }
+.btn:hover { background: var(--surface2); border-color: var(--border2); }
 .btn:active { transform: scale(0.98); }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-.btn-primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
-.btn-primary:hover { background: #333; border-color: #333; }
-.btn-success { background: #e8f5ee; color: #2d7a4f; border-color: #b8dfc9; }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+.btn-primary { background: var(--teal); color: #fff; border-color: var(--teal); }
+.btn-primary:hover { background: var(--teal-dark); border-color: var(--teal-dark); }
+.btn-success { background: var(--mint-bg); color: var(--mint-text); border-color: #9addd9; }
 
+/* Inline confirm/show key buttons */
+.api-banner button:not([class]) { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-family: inherit; }
+
+/* Output */
 .output-box {
-  background: #f9f8f5; border: 1px solid #e0ddd6; border-radius: 8px;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
   padding: 1rem; min-height: 140px; font-size: 13px; line-height: 1.75;
-  white-space: pre-wrap; word-break: break-word;
+  white-space: pre-wrap; word-break: break-word; color: var(--navy);
 }
-.output-box.scrollable {
-  max-height: 420px; overflow-y: auto;
-}
+.output-box.scrollable { max-height: 420px; overflow-y: auto; }
 .output-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
-.output-label span { font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.output-label span { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
 
+/* Score cards */
 .score-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.25rem; }
-.score-card { background: #f9f8f5; border-radius: 10px; padding: 1rem; text-align: center; border: 1px solid #e0ddd6; }
-.score-val { font-size: 32px; font-weight: 600; }
-.score-val.high { color: #2d7a4f; }
-.score-val.mid { color: #b5720a; }
-.score-val.low { color: #c0392b; }
-.score-label { font-size: 11px; color: #888; margin-top: 3px; }
+.score-card { background: var(--surface2); border-radius: 10px; padding: 1rem; text-align: center; border: 1px solid var(--border); }
+.score-val { font-size: 32px; font-weight: 700; letter-spacing: -0.03em; }
+.score-val.high { color: var(--teal); }
+.score-val.mid { color: var(--amber); }
+.score-val.low { color: var(--red); }
+.score-label { font-size: 11px; color: var(--muted); margin-top: 3px; font-weight: 500; }
 
-.rec-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #888; margin-bottom: 10px; padding-bottom: 7px; border-bottom: 1px solid #e0ddd6; }
-.rec-item { display: flex; gap: 9px; padding: 9px 0; border-bottom: 1px solid #f0ede6; align-items: flex-start; }
+/* Recommendations */
+.rec-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 10px; padding-bottom: 7px; border-bottom: 1px solid var(--border); }
+.rec-item { display: flex; gap: 9px; padding: 9px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
 .rec-item:last-child { border-bottom: none; }
 .rec-dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
-.rec-dot.ok { background: #2d7a4f; }
-.rec-dot.warn { background: #b5720a; }
-.rec-dot.fix { background: #c0392b; }
-.rec-source { font-size: 10px; padding: 2px 8px; border-radius: 10px; white-space: nowrap; font-weight: 600; margin-left: auto; flex-shrink: 0; margin-top: 1px; }
-.rec-source.template { background: #e8f0fb; color: #2c5fa8; }
-.rec-source.claude { background: #f0ede6; color: #888; border: 1px solid #e0ddd6; }
-.verdict-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
-.verdict-pass { background: #e8f5ee; color: #2d7a4f; border: 1px solid #b8dfc9; }
-.verdict-notes { background: #fff8e6; color: #b5720a; border: 1px solid #f0d080; }
-.verdict-fail { background: #fdecea; color: #c0392b; border: 1px solid #f5b7b1; }
+.rec-dot.ok { background: var(--teal); }
+.rec-dot.warn { background: var(--amber); }
+.rec-dot.fix { background: var(--red); }
+.rec-source { font-size: 10px; padding: 2px 8px; border-radius: 10px; white-space: nowrap; font-weight: 700; margin-left: auto; flex-shrink: 0; margin-top: 1px; letter-spacing: 0.02em; }
+.rec-source.template { background: #EAE0F8; color: var(--navy); }
+.rec-source.claude { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
 
-.upload-field { background: #f9f8f5; border: 1px solid #e0ddd6; border-radius: 8px; padding: 10px 13px; margin-bottom: 8px; }
-.upload-field .field-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-bottom: 4px; }
-.upload-field .field-val { font-size: 13px; color: #1a1a1a; }
+/* Tone checker verdict badges */
+.verdict-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.verdict-pass { background: var(--mint-bg); color: var(--mint-text); border: 1px solid #9addd9; }
+.verdict-notes { background: #FFF5D9; color: var(--amber); border: 1px solid #F5D87A; }
+.verdict-fail { background: #FDECEA; color: var(--red); border: 1px solid #F5B7B1; }
 
+/* Upload fields */
+.upload-field { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 13px; margin-bottom: 8px; }
+.upload-field .field-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 4px; }
+.upload-field .field-val { font-size: 13px; color: var(--navy); }
 
-.link-item { display: flex; align-items: flex-start; gap: 9px; padding: 9px 0; border-bottom: 1px solid #f0ede6; font-size: 13px; }
+/* Links */
+.link-item { display: flex; align-items: flex-start; gap: 9px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
 .link-item:last-child { border-bottom: none; }
-.link-badge { font-size: 11px; background: #e8f0fb; color: #2c5fa8; padding: 2px 8px; border-radius: 10px; white-space: nowrap; font-weight: 500; }
+.link-badge { font-size: 11px; background: #EAE0F8; color: var(--navy); padding: 2px 8px; border-radius: 10px; white-space: nowrap; font-weight: 600; }
 
-.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #ddd; border-top-color: currentColor; border-radius: 50%; animation: spin 0.7s linear infinite; }
+/* Utilities */
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: currentColor; border-radius: 50%; animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .hidden { display: none !important; }
 
-.template-notice { background: #f0f7ff; border: 1px solid #c5d9f5; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #2c5fa8; margin-bottom: 1.25rem; }
+.template-notice { background: #EAE0F8; border: 1px solid var(--border2); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--navy); margin-bottom: 1.25rem; }
 .checklist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 4px; }
-.checklist-item { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; padding: 8px 10px; background: #f9f8f5; border-radius: 8px; border: 1px solid #e0ddd6; }
+.checklist-item { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; padding: 8px 10px; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); }
 
-.copy-btn { padding: 5px 11px; font-size: 11px; background: #fff; border: 1px solid #e0ddd6; border-radius: 6px; cursor: pointer; color: #888; font-family: inherit; transition: all 0.15s; }
-.copy-btn:hover { background: #f5f4f0; color: #1a1a1a; }
+.copy-btn { padding: 5px 11px; font-size: 11px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; color: var(--muted); font-family: inherit; transition: all 0.15s; font-weight: 500; }
+.copy-btn:hover { background: var(--surface2); color: var(--navy); border-color: var(--border2); }
 
-.error-box { background: #fdf0f0; border: 1px solid #f5c5c5; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #c0392b; margin-top: 8px; }
+.error-box { background: #FDECEA; border: 1px solid #F5B7B1; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--red); margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -129,8 +166,15 @@ textarea { min-height: 85px; }
 
   <div class="header">
     <div class="logo">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
-        <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="pc-grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#00B8B0"/>
+            <stop offset="100%" stop-color="#0D0D4A"/>
+          </linearGradient>
+        </defs>
+        <circle cx="20" cy="20" r="20" fill="url(#pc-grad)"/>
+        <path d="M14 11h7.5a6.5 6.5 0 0 1 0 13H17v5h-3V11zm3 3v7h4.5a3.5 3.5 0 0 0 0-7H17z" fill="#fff"/>
       </svg>
     </div>
     <div class="header-text">
@@ -143,8 +187,8 @@ textarea { min-height: 85px; }
   <div class="api-banner">
     <label>Anthropic API Key</label>
     <input type="password" id="api-key" placeholder="sk-ant-..." oninput="checkKey(this.value)" onchange="checkKey(this.value)" onpaste="setTimeout(()=>checkKey(document.getElementById('api-key').value),50)" onkeyup="checkKey(this.value)">
-    <button id="btn-show-key" onclick="toggleKeyVisibility()" style="padding:5px 10px;font-size:11px;background:#f9f8f5;border:1px solid #ddd;border-radius:6px;cursor:pointer;color:#888;font-family:inherit;white-space:nowrap">Show</button>
-    <button onclick="confirmKey()" style="padding:5px 12px;font-size:11px;background:#1a1a1a;color:#fff;border:1px solid #1a1a1a;border-radius:6px;cursor:pointer;font-family:inherit;white-space:nowrap">Confirm</button>
+    <button id="btn-show-key" onclick="toggleKeyVisibility()" style="padding:5px 10px;font-size:11px;background:#EDE8F5;border:1px solid #E2DCF0;border-radius:6px;cursor:pointer;color:#7A7898;font-family:inherit;white-space:nowrap">Show</button>
+    <button onclick="confirmKey()" style="padding:5px 12px;font-size:11px;background:#00B8B0;color:#fff;border:1px solid #00B8B0;border-radius:6px;cursor:pointer;font-family:inherit;white-space:nowrap;font-weight:600">Confirm</button>
     <span class="api-status" id="api-status">Not set</span>
   </div>
 
@@ -230,16 +274,16 @@ textarea { min-height: 85px; }
       <div style="background:#f0f7ff;border:1px solid #c5d9f5;border-radius:8px;padding:12px 16px;margin-bottom:1.25rem;">
         <div style="font-size:12px;font-weight:600;color:#2c5fa8;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em">Every post is automatically built to include</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
-          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>TL;DR at the top (max 5 bullet points)</span></div>
-          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Primary term definition</span></div>
-          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Quick Answer section</span></div>
-          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Quick Steps summary (if applicable)</span></div>
-          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Numbered step-by-step structure</span></div>
-          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>At least 2 Paddle Creative Insights</span></div>
-          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Key Takeaways section</span></div>
-          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Key Concepts section</span></div>
-          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>FAQs section at the bottom</span></div>
-          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Numbered, conversational H1/H2/H3 headings</span></div>
+          <div style="font-size:12px;color:#0D0D4A;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>TL;DR at the top (max 5 bullet points)</span></div>
+          <div style="font-size:12px;color:#0D0D4A;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Primary term definition</span></div>
+          <div style="font-size:12px;color:#0D0D4A;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Quick Answer section</span></div>
+          <div style="font-size:12px;color:#0D0D4A;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Quick Steps summary (if applicable)</span></div>
+          <div style="font-size:12px;color:#0D0D4A;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Numbered step-by-step structure</span></div>
+          <div style="font-size:12px;color:#0D0D4A;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>At least 2 Paddle Creative Insights</span></div>
+          <div style="font-size:12px;color:#0D0D4A;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Key Takeaways section</span></div>
+          <div style="font-size:12px;color:#0D0D4A;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Key Concepts section</span></div>
+          <div style="font-size:12px;color:#0D0D4A;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>FAQs section at the bottom</span></div>
+          <div style="font-size:12px;color:#0D0D4A;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Numbered, conversational H1/H2/H3 headings</span></div>
         </div>
       </div>
       <div class="output-label">
@@ -297,7 +341,7 @@ textarea { min-height: 85px; }
       <h2>Paste your AEO/GEO optimisation template</h2>
       <p class="desc">Claude will score the content against your specific criteria first, then layer in its own AI readiness checks on top.</p>
       <div class="template-notice" id="template-notice">Paddle Creative AEO/GEO template is pre-loaded. Click Run full review to score this post.</div>
-      <div style="background:#e8f5ee;border:1px solid #b8dfc9;border-radius:8px;padding:10px 14px;margin-bottom:1.25rem;font-size:13px;color:#2d7a4f">
+      <div style="background:#D4F5F2;border:1px solid #9addd9;border-radius:8px;padding:10px 14px;margin-bottom:1.25rem;font-size:13px;color:#007A76">
         ✓ Paddle Creative AEO/GEO template loaded automatically — no need to paste it in.
       </div>
       <input type="hidden" id="inp-template" value="">
@@ -386,16 +430,16 @@ textarea { min-height: 85px; }
         </div>
         <div class="output-box" id="out-refined">Generating...</div>
       </div>
-      <div class="card" style="background:#e8f5ee;border-color:#b8dfc9">
-        <h2 style="color:#2d7a4f">What was improved</h2>
-        <p class="desc" style="color:#2d7a4f">A summary of changes made during the refinement.</p>
-        <div id="refine-summary" style="font-size:13px;color:#1a1a1a"></div>
+      <div class="card" style="background:#D4F5F2;border-color:#9addd9">
+        <h2 style="color:#007A76">What was improved</h2>
+        <p class="desc" style="color:#007A76">A summary of changes made during the refinement.</p>
+        <div id="refine-summary" style="font-size:13px;color:#0D0D4A"></div>
       </div>
       <div class="card hidden" id="rescore-results">
         <h2>Refined content scores</h2>
         <p class="desc">How the scores compare before and after refinement. Green = improved, red = dropped.</p>
         <div class="score-grid" id="rescore-grid" style="margin-bottom:1rem"></div>
-        <div style="font-size:13px;color:#888" id="rescore-status">Scoring...</div>
+        <div style="font-size:13px;color:#7A7898" id="rescore-status">Scoring...</div>
       </div>
       <div class="card hidden" id="refine-again-card">
         <h2>Refine again</h2>
@@ -674,7 +718,7 @@ Write it now — no preamble.`;
     document.getElementById('out-content').textContent = state.content;
     document.getElementById('btn-stage3').disabled = false;
   } catch(e) {
-    document.getElementById('out-content').innerHTML = `<span style="color:#c0392b">Error: ${e.message}</span>`;
+    document.getElementById('out-content').innerHTML = `<span style="color:#C0392B">Error: ${e.message}</span>`;
   }
   showSpinner('spin1', false);
 }
@@ -744,7 +788,7 @@ ${JSON.stringify(state.linkOpps)}`;
     document.getElementById('out-linked').textContent = state.linkedContent;
     document.getElementById('btn-stage4').disabled = false;
   } catch(e) {
-    document.getElementById('links-list').innerHTML = `<span style="color:#c0392b">Error: ${e.message}</span>`;
+    document.getElementById('links-list').innerHTML = `<span style="color:#C0392B">Error: ${e.message}</span>`;
   }
   showSpinner('spin3b', false);
   document.getElementById('btn-run-links').disabled = false;
@@ -984,7 +1028,7 @@ Use verdict "PASS" if no issues, "FAIL" if one or more hard fails, "PASS WITH NO
 
     const wins = claudeChecks.quick_wins || [];
     document.getElementById('quick-wins').innerHTML = wins.length
-      ? wins.map((w,i) => `<div class="checklist-item" style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:#f9f8f5;border-radius:8px;border:1px solid #e0ddd6"><label style="display:flex;align-items:flex-start;gap:8px;width:100%;cursor:pointer"><input type="checkbox" class="rec-checkbox" data-source="quickwin" data-index="${i}" checked style="margin-top:1px;flex-shrink:0;width:15px;height:15px;cursor:pointer"><span style="font-size:12px">${w}</span></label></div>`).join('')
+      ? wins.map((w,i) => `<div class="checklist-item" style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:#EDE8F5;border-radius:8px;border:1px solid #E2DCF0"><label style="display:flex;align-items:flex-start;gap:8px;width:100%;cursor:pointer"><input type="checkbox" class="rec-checkbox" data-source="quickwin" data-index="${i}" checked style="margin-top:1px;flex-shrink:0;width:15px;height:15px;cursor:pointer"><span style="font-size:12px">${w}</span></label></div>`).join('')
       : '<p style="color:#888;font-size:13px">No quick wins generated.</p>';
 
     // Render tone check card
@@ -999,13 +1043,13 @@ Use verdict "PASS" if no issues, "FAIL" if one or more hard fails, "PASS WITH NO
     }
     if (tc.rewrites && tc.rewrites.length) {
       document.getElementById('tone-rewrites').innerHTML = tc.rewrites.map(r =>
-        `<div style="padding:10px 12px;background:#f9f8f5;border:1px solid #e0ddd6;border-radius:8px;margin-bottom:8px;font-size:13px"><div style="color:#c0392b;margin-bottom:5px"><strong>Before:</strong> ${r.original}</div><div style="color:#2d7a4f"><strong>After:</strong> ${r.rewrite}</div></div>`
+        `<div style="padding:10px 12px;background:#EDE8F5;border:1px solid #E2DCF0;border-radius:8px;margin-bottom:8px;font-size:13px"><div style="color:#c0392b;margin-bottom:5px"><strong>Before:</strong> ${r.original}</div><div style="color:#2d7a4f"><strong>After:</strong> ${r.rewrite}</div></div>`
       ).join('');
       document.getElementById('tone-rewrites-wrap').classList.remove('hidden');
     }
     if (tc.whats_working && tc.whats_working.length) {
       document.getElementById('tone-working').innerHTML = tc.whats_working.map(w =>
-        `<div style="display:flex;gap:8px;padding:5px 0;font-size:13px;align-items:flex-start"><span style="color:#2d7a4f;font-weight:700;flex-shrink:0">\u2713</span><span>${w}</span></div>`
+        `<div style="display:flex;gap:8px;padding:5px 0;font-size:13px;align-items:flex-start"><span style="color:#007A76;font-weight:700;flex-shrink:0">\u2713</span><span>${w}</span></div>`
       ).join('');
       document.getElementById('tone-working-wrap').classList.remove('hidden');
     }
@@ -1018,7 +1062,7 @@ Use verdict "PASS" if no issues, "FAIL" if one or more hard fails, "PASS WITH NO
 
   } catch(e) {
     document.getElementById('review-results').classList.remove('hidden');
-    document.getElementById('recs-template').innerHTML = `<span style="color:#c0392b">Error: ${e.message}</span>`;
+    document.getElementById('recs-template').innerHTML = `<span style="color:#C0392B">Error: ${e.message}</span>`;
   }
 
   showSpinner('spin4', false);
@@ -1147,7 +1191,7 @@ ${meta.content_part2}`);
     }
 
   } catch(e) {
-    document.getElementById('upload-template').innerHTML = `<span style="color:#c0392b">Error: ${e.message}</span>`;
+    document.getElementById('upload-template').innerHTML = `<span style="color:#C0392B">Error: ${e.message}</span>`;
   }
   showSpinner('spin6', false);
 }
@@ -1208,7 +1252,7 @@ ${refined2}`;
       const orig = state.scores || {};
       const diff = (newVal, oldVal) => {
         const d = (newVal||0) - (oldVal||0);
-        return d > 0 ? `<span style="color:#2d7a4f;font-size:11px;margin-left:4px">+${d}</span>` : d < 0 ? `<span style="color:#c0392b;font-size:11px;margin-left:4px">${d}</span>` : `<span style="color:#888;font-size:11px;margin-left:4px">–</span>`;
+        return d > 0 ? `<span style="color:#007A76;font-size:11px;margin-left:4px">+${d}</span>` : d < 0 ? `<span style="color:#C0392B;font-size:11px;margin-left:4px">${d}</span>` : `<span style="color:#888;font-size:11px;margin-left:4px">–</span>`;
       };
       document.getElementById('rescore-grid').innerHTML = `
         <div class="score-card"><div class="score-val ${sc(rescore2.template_score)}">${rescore2.template_score}${diff(rescore2.template_score, orig.template_score)}</div><div class="score-label">Template score</div></div>
@@ -1221,7 +1265,7 @@ ${refined2}`;
     // Clear the textarea and update notice
     document.getElementById('inp-refine-extra').value = '';
     document.getElementById('refine-notice').textContent = '✓ Content refined again and ready for upload.';
-    document.getElementById('refine-again-recs').innerHTML = '<p style="color:#2d7a4f;font-size:13px">✓ Refinement applied. Run again if needed.</p>';
+    document.getElementById('refine-again-recs').innerHTML = '<p style="color:#007A76;font-size:13px">✓ Refinement applied. Run again if needed.</p>';
     document.getElementById('refine-again-count').textContent = '';
 
   } catch(e) {
@@ -1307,7 +1351,7 @@ ${state.refinedContent}`;
         const orig = state.scores || {};
         const diff = (newVal, oldVal) => {
           const d = (newVal||0) - (oldVal||0);
-          return d > 0 ? `<span style="color:#2d7a4f;font-size:11px;margin-left:4px">+${d}</span>` : d < 0 ? `<span style="color:#c0392b;font-size:11px;margin-left:4px">${d}</span>` : `<span style="color:#888;font-size:11px;margin-left:4px">–</span>`;
+          return d > 0 ? `<span style="color:#007A76;font-size:11px;margin-left:4px">+${d}</span>` : d < 0 ? `<span style="color:#C0392B;font-size:11px;margin-left:4px">${d}</span>` : `<span style="color:#888;font-size:11px;margin-left:4px">–</span>`;
         };
         document.getElementById('rescore-grid').innerHTML = `
           <div class="score-card"><div class="score-val ${sc(rescore.template_score)}">${rescore.template_score}${diff(rescore.template_score, orig.template_score)}</div><div class="score-label">Template score</div></div>
@@ -1375,7 +1419,7 @@ Identify 3-5 specific remaining improvements. Return JSON: {"recommendations": [
     }
   } catch(e) {
     document.getElementById('refine-results').classList.remove('hidden');
-    document.getElementById('out-refined').innerHTML = `<span style="color:#c0392b">Error: ${e.message}</span>`;
+    document.getElementById('out-refined').innerHTML = `<span style="color:#C0392B">Error: ${e.message}</span>`;
   }
   showSpinner('spin5', false);
   document.getElementById('btn-run-refine').disabled = false;
