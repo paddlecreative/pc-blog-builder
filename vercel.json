@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/paddle_creative_blog_builder_v2_3.html" }
+  ]
+}
