@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paddle Creative — Blog Builder</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; color: #1a1a1a; font-size: 14px; line-height: 1.6; }
+.app { max-width: 820px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+.header { display: flex; align-items: center; gap: 14px; margin-bottom: 2rem; padding-bottom: 1.25rem; border-bottom: 1px solid #e0ddd6; }
+.logo { width: 36px; height: 36px; background: #1a1a1a; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.logo svg { width: 20px; height: 20px; }
+.header-text h1 { font-size: 17px; font-weight: 600; }
+.header-text p { font-size: 12px; color: #888; margin-top: 1px; }
+
+/* API Key banner */
+.api-banner { background: #fff; border: 1px solid #e0ddd6; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; }
+.api-banner label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #888; white-space: nowrap; }
+.api-banner input { flex: 1; padding: 7px 10px; font-size: 13px; border: 1px solid #ddd; border-radius: 7px; background: #f9f8f5; font-family: monospace; }
+.api-banner input:focus { outline: none; border-color: #1a1a1a; }
+.api-status { font-size: 12px; color: #888; white-space: nowrap; }
+.api-status.ok { color: #2d7a4f; }
+
+.progress-bar-wrap { height: 3px; background: #e0ddd6; border-radius: 2px; margin-bottom: 1.5rem; }
+.progress-bar { height: 3px; background: #1a1a1a; border-radius: 2px; transition: width 0.4s ease; }
+
+.stage-nav { display: flex; margin-bottom: 1.5rem; border: 1px solid #e0ddd6; border-radius: 10px; overflow: hidden; background: #fff; }
+.stage-btn { flex: 1; padding: 10px 4px; font-size: 11px; font-weight: 500; background: transparent; border: none; color: #999; cursor: pointer; text-align: center; transition: all 0.15s; border-right: 1px solid #e0ddd6; font-family: inherit; }
+.stage-btn:last-child { border-right: none; }
+.stage-btn:hover { background: #f5f4f0; color: #1a1a1a; }
+.stage-btn.active { background: #1a1a1a; color: #fff; }
+.stage-btn.done { color: #2d7a4f; }
+.stage-btn .stage-num { display: block; font-size: 20px; font-weight: 600; margin-bottom: 1px; }
+.stage-btn.active .stage-num { color: #fff; }
+.stage-btn.done .stage-num { color: #2d7a4f; }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+.card { background: #fff; border: 1px solid #e0ddd6; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+.card h2 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.card .desc { font-size: 13px; color: #888; margin-bottom: 1.25rem; }
+
+label { display: block; font-size: 11px; color: #888; margin-bottom: 5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+input[type=text], textarea, select {
+  width: 100%; padding: 9px 11px; font-size: 14px; font-family: inherit;
+  background: #f9f8f5; border: 1px solid #e0ddd6; border-radius: 8px;
+  color: #1a1a1a; resize: vertical; transition: border-color 0.15s;
+}
+input[type=text]:focus, textarea:focus, select:focus { outline: none; border-color: #1a1a1a; background: #fff; }
+textarea { min-height: 85px; }
+.form-row { margin-bottom: 1.1rem; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 18px; font-size: 13px; font-weight: 500;
+  border-radius: 8px; cursor: pointer; transition: all 0.15s;
+  border: 1px solid #e0ddd6; background: #fff; color: #1a1a1a;
+  font-family: inherit;
+}
+.btn:hover { background: #f5f4f0; }
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn-primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.btn-primary:hover { background: #333; border-color: #333; }
+.btn-success { background: #e8f5ee; color: #2d7a4f; border-color: #b8dfc9; }
+
+.output-box {
+  background: #f9f8f5; border: 1px solid #e0ddd6; border-radius: 8px;
+  padding: 1rem; min-height: 140px; font-size: 13px; line-height: 1.75;
+  white-space: pre-wrap; word-break: break-word;
+}
+.output-box.scrollable {
+  max-height: 420px; overflow-y: auto;
+}
+.output-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+.output-label span { font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+
+.score-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+.score-card { background: #f9f8f5; border-radius: 10px; padding: 1rem; text-align: center; border: 1px solid #e0ddd6; }
+.score-val { font-size: 32px; font-weight: 600; }
+.score-val.high { color: #2d7a4f; }
+.score-val.mid { color: #b5720a; }
+.score-val.low { color: #c0392b; }
+.score-label { font-size: 11px; color: #888; margin-top: 3px; }
+
+.rec-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #888; margin-bottom: 10px; padding-bottom: 7px; border-bottom: 1px solid #e0ddd6; }
+.rec-item { display: flex; gap: 9px; padding: 9px 0; border-bottom: 1px solid #f0ede6; align-items: flex-start; }
+.rec-item:last-child { border-bottom: none; }
+.rec-dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.rec-dot.ok { background: #2d7a4f; }
+.rec-dot.warn { background: #b5720a; }
+.rec-dot.fix { background: #c0392b; }
+.rec-source { font-size: 10px; padding: 2px 8px; border-radius: 10px; white-space: nowrap; font-weight: 600; margin-left: auto; flex-shrink: 0; margin-top: 1px; }
+.rec-source.template { background: #e8f0fb; color: #2c5fa8; }
+.rec-source.claude { background: #f0ede6; color: #888; border: 1px solid #e0ddd6; }
+
+.upload-field { background: #f9f8f5; border: 1px solid #e0ddd6; border-radius: 8px; padding: 10px 13px; margin-bottom: 8px; }
+.upload-field .field-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-bottom: 4px; }
+.upload-field .field-val { font-size: 13px; color: #1a1a1a; }
+
+
+.link-item { display: flex; align-items: flex-start; gap: 9px; padding: 9px 0; border-bottom: 1px solid #f0ede6; font-size: 13px; }
+.link-item:last-child { border-bottom: none; }
+.link-badge { font-size: 11px; background: #e8f0fb; color: #2c5fa8; padding: 2px 8px; border-radius: 10px; white-space: nowrap; font-weight: 500; }
+
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #ddd; border-top-color: currentColor; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.hidden { display: none !important; }
+
+.template-notice { background: #f0f7ff; border: 1px solid #c5d9f5; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #2c5fa8; margin-bottom: 1.25rem; }
+.checklist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 4px; }
+.checklist-item { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; padding: 8px 10px; background: #f9f8f5; border-radius: 8px; border: 1px solid #e0ddd6; }
+
+.copy-btn { padding: 5px 11px; font-size: 11px; background: #fff; border: 1px solid #e0ddd6; border-radius: 6px; cursor: pointer; color: #888; font-family: inherit; transition: all 0.15s; }
+.copy-btn:hover { background: #f5f4f0; color: #1a1a1a; }
+
+.error-box { background: #fdf0f0; border: 1px solid #f5c5c5; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #c0392b; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>Paddle Creative — Blog Builder</h1>
+      <p>AEO/GEO + AI Search optimised content pipeline</p>
+    </div>
+  </div>
+
+  <!-- API Key input -->
+  <div class="api-banner">
+    <label>Anthropic API Key</label>
+    <input type="password" id="api-key" placeholder="sk-ant-..." oninput="checkKey(this.value)" onchange="checkKey(this.value)" onpaste="setTimeout(()=>checkKey(document.getElementById('api-key').value),50)" onkeyup="checkKey(this.value)">
+    <button id="btn-show-key" onclick="toggleKeyVisibility()" style="padding:5px 10px;font-size:11px;background:#f9f8f5;border:1px solid #ddd;border-radius:6px;cursor:pointer;color:#888;font-family:inherit;white-space:nowrap">Show</button>
+    <button onclick="confirmKey()" style="padding:5px 12px;font-size:11px;background:#1a1a1a;color:#fff;border:1px solid #1a1a1a;border-radius:6px;cursor:pointer;font-family:inherit;white-space:nowrap">Confirm</button>
+    <span class="api-status" id="api-status">Not set</span>
+  </div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progress" style="width:20%"></div>
+  </div>
+
+  <div class="stage-nav">
+    <button class="stage-btn active" onclick="goStage(1)" id="snav1"><span class="stage-num">1</span>Brief</button>
+    <button class="stage-btn" onclick="goStage(2)" id="snav2"><span class="stage-num">2</span>Write</button>
+    <button class="stage-btn" onclick="goStage(3)" id="snav3"><span class="stage-num">3</span>Links</button>
+    <button class="stage-btn" onclick="goStage(4)" id="snav4"><span class="stage-num">4</span>Review</button>
+    <button class="stage-btn" onclick="goStage(5)" id="snav5"><span class="stage-num">5</span>Refine</button>
+    <button class="stage-btn" onclick="goStage(6)" id="snav6"><span class="stage-num">6</span>Upload</button>
+  </div>
+
+  <!-- STAGE 1 -->
+  <div class="panel active" id="stage1">
+    <div class="card">
+      <h2>Blog brief</h2>
+      <p class="desc">Provide the page details and Paddle Creative will take it from here.</p>
+      <div class="form-row">
+        <label>Page title</label>
+        <input type="text" id="inp-title" placeholder="e.g. Why Brand Strategy Should Come Before Visual Identity">
+      </div>
+      <div class="form-row">
+        <label>Overview / topic summary</label>
+        <textarea id="inp-overview" placeholder="Summarise what this blog post should cover, the core argument, and who it's for..."></textarea>
+      </div>
+      <div class="form-grid form-row">
+        <div>
+          <label>Target word count</label>
+          <select id="inp-words">
+            <option value="1000">~1,000 words (short piece)</option>
+            <option value="1300" selected>~1,300 words (standard)</option>
+            <option value="1500">~1,500 words (in-depth)</option>
+            <option value="1800">~1,800 words (comprehensive)</option>
+            <option value="2200">~2,200 words (pillar content)</option>
+          </select>
+        </div>
+        <div>
+          <label>Content type</label>
+          <select id="inp-type">
+            <option>Blog post</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Target audience</label>
+        <input type="text" id="inp-audience" placeholder="e.g. Marketing directors at mid-size B2B companies">
+      </div>
+      <div class="form-row">
+        <label>Primary keyword / search intent</label>
+        <input type="text" id="inp-keyword" placeholder="e.g. brand strategy agency">
+      </div>
+      <div class="form-row">
+        <label>Author</label>
+        <select id="inp-author">
+          <option value="sam">Sam Parker</option>
+          <option value="bogdan">Bogdan Dumitrache</option>
+          <option value="matt">Matt Connelly</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label>Additional requirements (optional)</label>
+        <textarea id="inp-extra" placeholder="Any specific sections, stats to reference, CTAs, examples to avoid..." style="min-height:60px"></textarea>
+      </div>
+
+
+      <button class="btn btn-primary" onclick="runStage2()">
+        <span class="spinner hidden" id="spin1"></span>
+        Generate blog post →
+      </button>
+    </div>
+  </div>
+
+  <!-- STAGE 2 -->
+  <div class="panel" id="stage2">
+    <div class="card">
+      <h2>AEO/GEO optimised blog post</h2>
+      <p class="desc">Written in Paddle Creative's TOV, structured for AI search extraction.</p>
+      <div style="background:#f0f7ff;border:1px solid #c5d9f5;border-radius:8px;padding:12px 16px;margin-bottom:1.25rem;">
+        <div style="font-size:12px;font-weight:600;color:#2c5fa8;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em">Every post is automatically built to include</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>TL;DR at the top (max 5 bullet points)</span></div>
+          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Primary term definition</span></div>
+          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Quick Answer section</span></div>
+          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Quick Steps summary (if applicable)</span></div>
+          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Numbered step-by-step structure</span></div>
+          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>At least 2 Paddle Creative Insights</span></div>
+          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Key Takeaways section</span></div>
+          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Key Concepts section</span></div>
+          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>FAQs section at the bottom</span></div>
+          <div style="font-size:12px;color:#2c5fa8;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Numbered, conversational H1/H2/H3 headings</span></div>
+        </div>
+      </div>
+      <div class="output-label">
+        <span>Generated content</span>
+        <button class="copy-btn" onclick="copyText('out-content')">Copy</button>
+      </div>
+      <div class="output-box" id="out-content">Waiting to generate...</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="goStage(1)">← Edit brief</button>
+      <button class="btn btn-primary" onclick="goStage(3)" id="btn-stage3" disabled>
+        Add internal links →
+      </button>
+    </div>
+  </div>
+
+  <!-- STAGE 3 -->
+  <div class="panel" id="stage3">
+    <div class="card">
+      <h2>Internal linking</h2>
+      <p class="desc">Paste the internal URLs you want Claude to consider, then click the button to find and apply linking opportunities.</p>
+      <div class="form-row" style="margin-bottom:1.25rem">
+        <label>Internal URLs + descriptions</label>
+        <p style="font-size:12px;color:#888;margin-bottom:8px">Paste two columns from your spreadsheet — URL in the first column, description in the second (tab-separated). Or paste one URL per line if you don't have descriptions.</p>
+        <textarea id="inp-extra-links" placeholder="https://paddlecreative.co.uk/services/brand-strategy	This page covers our brand strategy services for B2B companies&#10;https://paddlecreative.co.uk/work	Our portfolio of Webflow projects and case studies&#10;https://paddlecreative.co.uk/about	About the Paddle Creative team and our approach" style="min-height:160px;font-size:12px;font-family:monospace"></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="runStage3()" id="btn-run-links">
+        <span class="spinner hidden" id="spin3b"></span>
+        Find and apply internal links →
+      </button>
+    </div>
+    <div class="card hidden" id="links-results-card">
+      <h2>Linking opportunities found</h2>
+      <p class="desc">Claude has identified the following opportunities and applied them to the content.</p>
+      <div id="links-list"></div>
+    </div>
+    <div class="card">
+      <h2>Content with links applied</h2>
+      <p class="desc">The blog post with internal links woven in naturally.</p>
+      <div class="output-label">
+        <span>Linked content</span>
+        <button class="copy-btn" onclick="copyText('out-linked')">Copy</button>
+      </div>
+      <div class="output-box" id="out-linked">Waiting...</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="goStage(2)">← Edit content</button>
+      <button class="btn btn-primary" onclick="goStage(4)" id="btn-stage4" disabled>Score AI readiness →</button>
+    </div>
+  </div>
+
+  <!-- STAGE 4 -->
+  <div class="panel" id="stage4">
+    <div class="card">
+      <h2>Paste your AEO/GEO optimisation template</h2>
+      <p class="desc">Claude will score the content against your specific criteria first, then layer in its own AI readiness checks on top.</p>
+      <div class="template-notice" id="template-notice">Paddle Creative AEO/GEO template is pre-loaded. Click Run full review to score this post.</div>
+      <div style="background:#e8f5ee;border:1px solid #b8dfc9;border-radius:8px;padding:10px 14px;margin-bottom:1.25rem;font-size:13px;color:#2d7a4f">
+        ✓ Paddle Creative AEO/GEO template loaded automatically — no need to paste it in.
+      </div>
+      <input type="hidden" id="inp-template" value="">
+      <button class="btn btn-primary" onclick="runStage4Score()" id="btn-run-review">
+        <span class="spinner hidden" id="spin4"></span>
+        Run full review →
+      </button>
+    </div>
+
+    <div id="review-results" class="hidden">
+      <div class="card">
+        <h2>Template-based scores</h2>
+        <p class="desc">Scored against your AEO/GEO optimisation template criteria.</p>
+        <div class="score-grid">
+          <div class="score-card"><div class="score-val" id="sc-template">–</div><div class="score-label">Template score</div></div>
+          <div class="score-card"><div class="score-val" id="sc-aeo">–</div><div class="score-label">AEO</div></div>
+          <div class="score-card"><div class="score-val" id="sc-geo">–</div><div class="score-label">GEO</div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div class="rec-section-title" style="margin-bottom:0">Template findings</div><div style="display:flex;gap:6px"><button onclick="toggleAllRecs('template',true)" class="copy-btn">Select all</button><button onclick="toggleAllRecs('template',false)" class="copy-btn">Deselect all</button></div></div>
+        <div id="recs-template">Waiting...</div>
+      </div>
+
+      <div class="card">
+        <h2>Claude's additional AI readiness checks</h2>
+        <p class="desc">Extra checks covering extractability, entity clarity, and AI citation potential.</p>
+        <div class="score-grid">
+          <div class="score-card"><div class="score-val" id="sc-extract">–</div><div class="score-label">Extractability</div></div>
+          <div class="score-card"><div class="score-val" id="sc-entity">–</div><div class="score-label">Entity clarity</div></div>
+          <div class="score-card"><div class="score-val" id="sc-overall">–</div><div class="score-label">Overall</div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div class="rec-section-title" style="margin-bottom:0">Additional recommendations</div><div style="display:flex;gap:6px"><button onclick="toggleAllRecs('claude',true)" class="copy-btn">Select all</button><button onclick="toggleAllRecs('claude',false)" class="copy-btn">Deselect all</button></div></div>
+        <div id="recs-claude">Waiting...</div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><h2>Quick wins checklist</h2><div style="display:flex;gap:6px"><button onclick="toggleAllRecs('quickwin',true)" class="copy-btn">Select all</button><button onclick="toggleAllRecs('quickwin',false)" class="copy-btn">Deselect all</button></div></div>
+        <p class="desc">Tick the improvements you want included in the refined version. Untick any you want to skip.</p>
+        <div id="quick-wins">Generating...</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button class="btn" onclick="goStage(3)">← Edit links</button>
+      <button class="btn btn-primary" onclick="goStage(5)" id="btn-stage5" disabled>
+        Refine content →
+      </button>
+    </div>
+  </div>
+
+  <!-- STAGE 5: Refine -->
+  <div class="panel" id="stage5">
+    <div class="card">
+      <h2>Refine based on review</h2>
+      <p class="desc">Claude will now update the content to address all recommendations from the review — improving scores and fixing any gaps before upload.</p>
+      <div class="template-notice" id="refine-notice">Ready to refine. Claude will apply all template findings, quick wins, and additional recommendations automatically.</div>
+      <button class="btn btn-primary" onclick="runStage5Refine()" id="btn-run-refine">
+        <span class="spinner hidden" id="spin5"></span>
+        Refine content →
+      </button>
+    </div>
+    <div id="refine-results" class="hidden">
+      <div class="card">
+        <h2>Refined content</h2>
+        <p class="desc">Updated based on all review recommendations. Changes are applied throughout.</p>
+        <div class="output-label">
+          <span>Refined blog post</span>
+          <button class="copy-btn" onclick="copyText('out-refined')">Copy</button>
+        </div>
+        <div class="output-box" id="out-refined">Generating...</div>
+      </div>
+      <div class="card" style="background:#e8f5ee;border-color:#b8dfc9">
+        <h2 style="color:#2d7a4f">What was improved</h2>
+        <p class="desc" style="color:#2d7a4f">A summary of changes made during the refinement.</p>
+        <div id="refine-summary" style="font-size:13px;color:#1a1a1a"></div>
+      </div>
+      <div class="card hidden" id="rescore-results">
+        <h2>Refined content scores</h2>
+        <p class="desc">How the scores compare before and after refinement. Green = improved, red = dropped.</p>
+        <div class="score-grid" id="rescore-grid" style="margin-bottom:1rem"></div>
+        <div style="font-size:13px;color:#888" id="rescore-status">Scoring...</div>
+      </div>
+      <div class="card hidden" id="refine-again-card">
+        <h2>Refine again</h2>
+        <p class="desc">Not quite there? Tick the additional recommendations below and run another pass — or add your own notes.</p>
+        <div id="refine-again-recs" style="margin-bottom:1rem">Generating further recommendations...</div>
+        <div class="form-row" style="margin-bottom:1rem">
+          <label>Your own additional instructions (optional)</label>
+          <textarea id="inp-refine-extra" placeholder="e.g. Make the intro punchier, add more Paddle Creative examples, expand the Key Concepts section..." style="min-height:70px"></textarea>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="runRefineAgain()" id="btn-refine-again">
+            <span class="spinner hidden" id="spin-refine-again"></span>
+            Refine again →
+          </button>
+          <span style="font-size:12px;color:#888" id="refine-again-count"></span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button class="btn" onclick="goStage(4)">← Back to review</button>
+      <button class="btn btn-primary" onclick="runStage6()" id="btn-stage6" disabled>
+        <span class="spinner hidden" id="spin6"></span>
+        Build upload template →
+      </button>
+    </div>
+  </div>
+
+  <!-- STAGE 6 -->
+  <div class="panel" id="stage5">
+
+    <!-- Paddle Creative Upload Template -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <h2>Paddle Creative — Webpage upload template</h2>
+        <button class="copy-btn" onclick="copyUploadTemplate()">Copy all fields</button>
+      </div>
+      <p class="desc">Add content into each field so it can be uploaded to Paddle Creative's website with ease.</p>
+      <div id="upload-template">Compiling...</div>
+    </div>
+
+    <!-- Google Sheets version -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <h2>Google Sheets version</h2>
+        <button class="copy-btn" onclick="copyText('out-sheets')">Copy for Sheets</button>
+      </div>
+      <p class="desc">Tab-separated values — paste directly into Google Sheets. Each field is on its own row.</p>
+      <div class="output-box" id="out-sheets" style="font-size:12px;font-family:monospace;white-space:pre;max-height:320px;overflow-y:auto">Waiting...</div>
+    </div>
+
+    <!-- Content HTML -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <h2>Content HTML (for Webflow)</h2>
+        <button class="copy-btn" onclick="copyText('out-html-part1')">Copy Part 1</button>
+      </div>
+      <p class="desc">Part 1 — content before the mid-content CTA, ready to paste into Webflow.</p>
+      <div class="output-box" id="out-html-part1" style="font-size:11px;font-family:monospace;max-height:320px;overflow-y:auto">Waiting...</div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <h2>&nbsp;</h2>
+        <button class="copy-btn" onclick="copyText('out-html-part2')">Copy Part 2</button>
+      </div>
+      <p class="desc">Part 2 — content after the mid-content CTA.</p>
+      <div class="output-box" id="out-html-part2" style="font-size:11px;font-family:monospace;max-height:320px;overflow-y:auto">Waiting...</div>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="goStage(5)">← Back to refine</button>
+      <button class="btn btn-success" onclick="startOver()">+ New blog post</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const MODEL = "claude-sonnet-4-20250514";
+let state = {};
+
+const AUTHOR_DATA = {
+  sam: {
+    name: "Sam Parker",
+    role: "Content Strategist",
+    bio: "Sam is a Content Strategist at Paddle Creative with over a decade of experience in digital marketing. Specialising in digital optimisation and integrated campaigns, Sam helps clients navigate the shift toward emerging technologies like AI search and Answer Engine Optimisation (AEO)."
+  },
+  bogdan: {
+    name: "Bogdan Dumitrache",
+    role: "Senior Webflow Developer",
+    bio: "Bogdan has worked on over 100 Webflow projects with fast-growth companies across the globe. As the Paddle Creative Senior Webflow Developer, Bogdan leads the way in ensuring QA of our Webflow delivery and upskilling our Webflow team."
+  },
+  matt: {
+    name: "Matt Connelly",
+    role: "Founder",
+    bio: "Matt Connelly is the Founder of Paddle Creative, where he helps ambitious brands scale with smarter Webflow strategies and measurable marketing results. With 20+ years of experience in marketing and scaling businesses, he is passionate about turning websites into growth engines for fast-growth companies."
+  }
+};
+
+function getKey() { return document.getElementById('api-key').value.trim(); }
+function confirmKey() {
+  const v = document.getElementById('api-key').value.trim();
+  if (!v) { alert('Please paste your Anthropic API key into the field first.'); return; }
+  const valid = v.startsWith('sk-');
+  const el = document.getElementById('api-status');
+  if (valid) {
+    el.textContent = '✓ Key set';
+    el.className = 'api-status ok';
+    alert('API key confirmed! You\'re ready to generate.');
+  } else {
+    el.textContent = 'Invalid key format';
+    el.className = 'api-status';
+    alert('That doesn\'t look right. Your Anthropic API key should start with sk-ant-');
+  }
+}
+
+function toggleKeyVisibility() {
+  const inp = document.getElementById('api-key');
+  const btn = document.getElementById('btn-show-key');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? 'Show' : 'Hide';
+}
+
+function checkKey(v) {
+  const el = document.getElementById('api-status');
+  const valid = v.startsWith('sk-ant-') || v.startsWith('sk-');
+  el.textContent = valid ? '✓ Key set' : (v.length > 0 ? 'Invalid key format' : 'Not set');
+  el.className = 'api-status' + (valid ? ' ok' : '');
+}
+
+
+function goStage(n) {
+  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===n-1));
+  document.querySelectorAll('.stage-btn').forEach((b,i) => b.classList.toggle('active', i===n-1));
+  document.getElementById('progress').style.width = (n/6*100)+'%';
+  window.scrollTo(0,0);
+}
+
+function showSpinner(id, show) {
+  const el = document.getElementById(id);
+  if(el) el.classList.toggle('hidden', !show);
+}
+
+async function callClaude(systemPrompt, userPrompt) {
+  const key = getKey();
+  if (!key) throw new Error('Please enter your Anthropic API key at the top of the page.');
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 4000,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }]
+    })
+  });
+  const data = await res.json();
+  if (!data.content) throw new Error(data.error?.message || 'API error — check your key and try again.');
+  return data.content.map(b => b.text || '').join('');
+}
+
+async function runStage2() {
+  const title = document.getElementById('inp-title').value.trim();
+  const overview = document.getElementById('inp-overview').value.trim();
+  if (!title || !overview) { alert('Please add a title and overview first.'); return; }
+  if (!getKey()) { alert('Please enter your Anthropic API key first (starts with sk-ant-).'); return; }
+
+  state.title = title;
+  state.overview = overview;
+  state.words = document.getElementById('inp-words').value;
+  state.type = document.getElementById('inp-type').value;
+  state.audience = document.getElementById('inp-audience').value;
+  state.keyword = document.getElementById('inp-keyword').value;
+  state.authorKey = document.getElementById('inp-author').value;
+  state.author = AUTHOR_DATA[state.authorKey] || AUTHOR_DATA.sam;
+  state.extra = document.getElementById('inp-extra').value;
+
+  goStage(2);
+  showSpinner('spin1', true);
+  document.getElementById('out-content').textContent = 'Writing your blog post...';
+  document.getElementById('btn-stage3').disabled = true;
+
+  try {
+    const PADDLE_TOV = [
+      'PADDLE CREATIVE TONE OF VOICE:',
+      'Brand personality: Provocatively Playful.',
+      'Provocative: Tell it like it is — honest, no arrogance, challenge the status quo with a knowing wink. Never punch down.',
+      'Playful: Friendly, knowing humour. A twinkle in the eye. Balance playfulness with professionalism.',
+      'Human not corporate: Speak directly to marketers. Make complex ideas simple. Empower, never gatekeep.',
+      'Authentic: We do not pretend to care — we actually do. We do not follow the herd.',
+      '',
+      'WRITING RULES:',
+      '- Speak to one person — always you, not we',
+      '- Short, clear, to the point. Every word must count.',
+      '- Full stops add punch. Use them. Like this.',
+      '- Exclamation marks: use sparingly. Too many = try-hard.',
+      '- Emojis: use with intention, not excessively.',
+      '- No AI language: never use consequently, furthermore, it is worth noting, in conclusion, or robotic phrases.',
+      '- Start sentences with And or Because if it works.',
+      '- Read it aloud — if it sounds awkward, rewrite it.',
+      '- Bullet points: keep them short.',
+      '- Timeless over trendy: avoid internet slang.',
+      '- Never use em dashes (—). Always use en dashes (–) instead — they look better and improve readability.',
+      '',
+      'HEADLINES: Spark a reaction — a smile, a raised eyebrow, a double-take. Never indifference. Be bold, stir curiosity.',
+      'BAD headline: Streamline Your Website Updates with Webflow.',
+      'GOOD headline: Tired of begging devs for plugin updates? Meet Webflow.',
+      '',
+      'PADDLE CREATIVE VOICE: Do good work and let it do the talking, create something you are proud of but avoid the ego, celebrate progress while striving for improvement, and remember — it is not brain surgery, it is marketing. Do not take everything too seriously.'
+    ].join('\n');
+    const tovBlock = '\n\n' + PADDLE_TOV;
+    const sys = `You are a senior content strategist at Paddle Creative, a bold and ambitious brand and creative agency. Your writing is clear, confident and never corporate — it sounds like a smart human, not a bot. You specialise in AEO (Answer Engine Optimisation) and GEO (Generative Engine Optimisation) — writing content that AI systems like ChatGPT, Perplexity and Google AI Overviews can easily extract, quote and recommend.
+
+EVERY blog post you write MUST include ALL of the following sections in this order:
+1. TL;DR — formatted as bullet points only (no prose), maximum 5 bullets, each bullet one concise sentence. Place at the very top immediately after the H1.
+2. Primary term definition — a clear, citable definition of the main topic
+3. Quick Answer — a direct 1-2 sentence answer to the core question
+4. Quick Steps summary — a brief bulleted overview of steps (if the topic is process-based)
+5. Step-by-step body — numbered H2 or H3 headings guiding the reader through the topic
+6. At least 2 'Paddle Creative Insight' callouts — labelled clearly, sharing a unique expert perspective
+7. Key Takeaways — a bulleted summary section
+8. Key Concepts — a glossary-style section defining important terms used in the post
+9. FAQs — at least 3 Q&A pairs at the bottom
+10. CTA block — as specified
+
+Headings must be formatted as H1/H2/H3 in markdown. ALL H2 and H3 headings must be numbered (e.g. "1. Why Brand Strategy Matters", "2. How to Build a Brand Strategy", "2.1 Define Your Audience"). Use conversational, descriptive headings — natural and answer-oriented for AEO. Keep paragraphs to 3-4 sentences max.${tovBlock}`;
+    const prompt = `Write a ${state.words}-word ${state.type} for Paddle Creative's website.
+
+Title: ${state.title}
+Overview: ${state.overview}
+Target audience: ${state.audience || 'marketing leaders and business owners'}
+Primary keyword: ${state.keyword || 'not specified'}
+${state.extra ? 'Additional requirements: '+state.extra : ''}
+
+IMPORTANT CTA INSTRUCTIONS:
+After the introduction or first section, insert a mid-content CTA block:
+- ## heading: write a compelling, topic-relevant CTA heading that invites the reader to book a call with Paddle Creative — make it feel like the natural next step for someone reading about this topic
+- Subheading paragraph: 2-3 sentences connecting this blog topic to Paddle Creative expertise and why booking a call makes sense right now
+- Button on its own line: [Book a Call](https://paddlecreative.co.uk/contact)
+
+Then continue the rest of the post. End the post with a second closing CTA block in the same format — use a different heading and subheading from the mid-content one, written for someone who has just finished reading the full post.
+
+Format all headings as markdown (# H1, ## H2, ### H3). Number all H2 and H3 headings sequentially (e.g. ## 1. First Section, ## 2. Second Section, ### 2.1 Subsection).
+
+AUTHOR SECTION: Before the FAQs section, include an ## About the Author section with this exact content — do not rewrite it:
+**${state.author.name}** — *${state.author.role} at Paddle Creative*
+${state.author.bio}
+
+Write it now — no preamble.`;
+
+    state.content = (await callClaude(sys, prompt)).replace(/—/g, '–');
+    document.getElementById('out-content').textContent = state.content;
+    document.getElementById('btn-stage3').disabled = false;
+  } catch(e) {
+    document.getElementById('out-content').innerHTML = `<span style="color:#c0392b">Error: ${e.message}</span>`;
+  }
+  showSpinner('spin1', false);
+}
+
+async function runStage3() {
+  if (!state.content) { alert('Please complete Stage 2 first.'); return; }
+  showSpinner('spin3b', true);
+  document.getElementById('btn-run-links').disabled = true;
+  document.getElementById('links-list').textContent = 'Analysing for internal link opportunities...';
+  document.getElementById('out-linked').textContent = 'Applying links...';
+  document.getElementById('btn-stage4').disabled = true;
+  const linksCard = document.getElementById('links-results-card');
+  if (linksCard) linksCard.classList.remove('hidden');
+
+  const extraLinksRaw = document.getElementById('inp-extra-links').value.trim();
+  // Format URL+description pairs for the prompt — handle tab-separated or URL-only lines
+  const linkList = extraLinksRaw
+    ? extraLinksRaw.split('\n').filter(l => l.trim()).map(line => {
+        const parts = line.split('\t');
+        const url = parts[0].trim();
+        const desc = parts[1] ? parts[1].trim() : '';
+        return desc ? `${url} — ${desc}` : url;
+      }).join('\n')
+    : '(no internal links provided — add URLs in the box above)';
+
+  try {
+    const sys1 = `You are an SEO strategist for Paddle Creative. Identify natural internal linking opportunities. Return valid JSON only — no markdown, no explanation.`;
+    const prompt1 = `Given this blog post and these internal pages, identify 3-5 natural internal linking opportunities.
+
+BLOG POST:
+${state.content}
+
+INTERNAL PAGES (format: URL — description of page content):
+${linkList}
+
+Use the page descriptions to find genuinely relevant linking opportunities — not just keyword matches. Return JSON: {"opportunities": [{"anchor": "anchor text in the post", "url": "the URL", "reason": "why this link fits based on the page description", "context": "the sentence it appears in"}]}`;
+
+    const raw1 = await callClaude(sys1, prompt1);
+    let parsed;
+    try { parsed = JSON.parse(raw1.replace(/```json|```/g,'')); } catch { parsed = { opportunities: [] }; }
+    state.linkOpps = parsed.opportunities || [];
+
+    const listEl = document.getElementById('links-list');
+    if (state.linkOpps.length === 0) {
+      listEl.innerHTML = '<p style="color:#888;font-size:13px">No internal pages provided — placeholder links will be suggested in the content.</p>';
+    } else {
+      listEl.innerHTML = state.linkOpps.map(l => `
+        <div class="link-item">
+          <div style="flex:1">
+            <span class="link-badge">→ ${l.url || 'internal page'}</span>
+            <strong style="display:block;margin-top:5px">"${l.anchor}"</strong>
+            <span style="color:#888;font-size:12px">${l.reason}</span>
+          </div>
+        </div>`).join('');
+    }
+
+    const sys2 = `You are a content editor at Paddle Creative. Apply internal links naturally. Return only the updated markdown blog post — no preamble.`;
+    const prompt2 = `Insert these internal links naturally into the blog post as [anchor text](url). Do not change any other content.
+
+BLOG POST:
+${state.content}
+
+LINKS TO ADD:
+${JSON.stringify(state.linkOpps)}`;
+
+    state.linkedContent = await callClaude(sys2, prompt2);
+    document.getElementById('out-linked').textContent = state.linkedContent;
+    document.getElementById('btn-stage4').disabled = false;
+  } catch(e) {
+    document.getElementById('links-list').innerHTML = `<span style="color:#c0392b">Error: ${e.message}</span>`;
+  }
+  showSpinner('spin3b', false);
+  document.getElementById('btn-run-links').disabled = false;
+}
+
+async function runStage4Score() {
+  const template = [
+      'LLM / AEO / GEO NEW WEBPAGE TEMPLATE - PADDLE CREATIVE',
+      '',
+      'Step 1: Define target prompts and user questions',
+      'Define the main prompt or question the page should answer, and 3-5 supporting prompts capturing related user intents. Aligns content with how people actually ask in AI, voice, and chat.',
+      '',
+      'Step 2: Write a clear, conversational introduction',
+      'Checklist:',
+      '- Main user prompt clearly answered within first 2-3 sentences',
+      '- States who the page is for and value it offers',
+      '- Tone is human, clear, conversational (avoid jargon)',
+      '- Includes short TL;DR or summary paragraph',
+      '',
+      'Step 2.1: Add a Quick Answer section after the intro',
+      '- 40-60 words',
+      '- Directly answers the primary prompt',
+      '- Clear and factual',
+      '- No marketing language',
+      '',
+      'Step 3: Step-by-step or structured guide',
+      'Clear sequential steps. Use headings that mirror real questions (e.g. \"How do I enable SSL?\" not \"SSL settings\").',
+      '',
+      'Step 3.1: Add a Quick Steps summary',
+      '- 4-6 steps',
+      '- Short actionable phrases',
+      '- Mirrors the detailed sections later in the guide',
+      '',
+      'Step 4: Add Paddle Insights and expertise',
+      'At least 2 Paddle Insights per page. These must be unique human insights - not AI-generated generalities:',
+      '- Quotes, opinions, or tips from founders, strategists, or designers',
+      '- Mini case study references',
+      '- Observations from real client experiences',
+      '- Unique process insights (\"Here is how we approach X differently at Paddle Creative\")',
+      '- Team commentary that adds human expertise beyond AI-accessible data',
+      '',
+      'Step 5: Add a Key Takeaways section at the end',
+      '- 4-6 bullets',
+      '- Clear factual statements',
+      '- Avoid promotional language',
+      '- Improves answer extraction by AI systems',
+      '',
+      'Step 6: Add Key Concepts section',
+      'After main article, define 3-5 core concepts related to the topic:',
+      '- 40-60 words per definition',
+      '- Written in neutral, educational tone',
+      '- Reinforces topic expertise',
+      '- AI systems prefer sources that both explain AND define concepts',
+      '',
+      'Step 7: Add FAQs',
+      '- 3-5 FAQs based on conversational or prompt-based queries',
+      '- Questions phrased naturally (How do I, What is the best way to)',
+      '- Answers 40-60 words, direct, linked to main content where possible',
+      '- FAQs positioned near bottom of page',
+      '- Wrap in FAQPage schema for Google and LLMs',
+      '',
+      'Step 8: Add supporting media and schema',
+      'Include screenshots, diagrams, or short videos. Add HowTo and FAQ schema markup.',
+      '',
+      'Step 9: Internal linking',
+      'Link to relevant pages to improve site authority and help LLMs contextualise content.',
+      '',
+      'Step 10: Metadata optimisation',
+      '- Title includes primary prompt phrasing',
+      '- Description summarises page value clearly',
+      '- Both concise and human-readable (avoid keyword stuffing)',
+      '- Titles should communicate the question being answered and the benefit',
+      '',
+      'Step 11: Final checklist',
+      '- Primary prompt and 3-5 supporting questions defined',
+      '- Intro clearly answers main prompt',
+      '- Quick Answer snippet added after intro',
+      '- Quick Steps summary added near top of guide',
+      '- Steps and subheadings use natural question phrasing',
+      '- At least 2 Paddle Insights added',
+      '- Key Concepts section added (3-5 concepts, 40-60 words each)',
+      '- FAQs added and marked up with FAQPage schema',
+      '- Key Takeaways section added at end (4-6 bullets, factual, extractable)',
+      '- Media/screenshots embedded',
+      '- Internal links included',
+      '- Metadata written for conversational clarity'
+    ].join('\n');
+  if (!state.linkedContent) { alert('Please complete stages 1–3 first.'); return; }
+  state.aeoTemplate = template;
+
+  showSpinner('spin4', true);
+  document.getElementById('btn-run-review').disabled = true;
+  document.getElementById('review-results').classList.add('hidden');
+
+  try {
+    const sys1 = `You are an AEO/GEO expert reviewer. Score content against a provided optimisation template. Return valid JSON only — no markdown, no explanation.`;
+    const prompt1 = `Score this blog post against the provided AEO/GEO optimisation template.
+
+BLOG POST:
+${state.linkedContent}
+
+AEO/GEO TEMPLATE:
+${template || 'No template provided — use general AEO/GEO best practices as the framework.'}
+
+Return JSON:
+{
+  "template_score": 0-100,
+  "aeo_score": 0-100,
+  "geo_score": 0-100,
+  "template_findings": [
+    {"type": "ok|warn|fix", "criterion": "the template criterion being assessed", "finding": "specific finding for this post"}
+  ]
+}
+Include one finding per major criterion in the template (or 5-7 general ones if no template). Be specific to this content.`;
+
+    const raw1 = await callClaude(sys1, prompt1);
+    let scores;
+    try { scores = JSON.parse(raw1.replace(/```json|```/g,'')); }
+    catch { scores = {template_score:70,aeo_score:70,geo_score:70,template_findings:[{type:'warn',criterion:'Parse error',finding:'Could not parse scores — please try again.'}]}; }
+
+    const sys2 = `You are an AI search optimisation specialist. Identify AI readiness issues beyond standard SEO — focusing on LLM extractability, entity resolution, citation potential, and structured answer patterns. Return valid JSON only.`;
+    const prompt2 = `Review this blog post for AI readiness BEYOND standard AEO/GEO criteria.
+
+BLOG POST:
+${state.linkedContent}
+
+Return JSON:
+{
+  "extractability_score": 0-100,
+  "entity_clarity_score": 0-100,
+  "overall_score": 0-100,
+  "additional_recommendations": [
+    {"type": "ok|warn|fix", "text": "specific recommendation"}
+  ],
+  "quick_wins": ["short actionable item"]
+}
+Include 4-6 additional recommendations and 3-5 quick wins.`;
+
+    const raw2 = await callClaude(sys2, prompt2);
+    let claudeChecks;
+    try { claudeChecks = JSON.parse(raw2.replace(/```json|```/g,'')); }
+    catch { claudeChecks = {extractability_score:70,entity_clarity_score:70,overall_score:70,additional_recommendations:[{type:'warn',text:'Could not parse — please try again.'}],quick_wins:[]}; }
+
+    state.scores = { ...scores, ...claudeChecks };
+
+    const sc = v => v >= 80 ? 'high' : v >= 60 ? 'mid' : 'low';
+    document.getElementById('sc-template').textContent = scores.template_score;
+    document.getElementById('sc-template').className = 'score-val '+sc(scores.template_score);
+    document.getElementById('sc-aeo').textContent = scores.aeo_score;
+    document.getElementById('sc-aeo').className = 'score-val '+sc(scores.aeo_score);
+    document.getElementById('sc-geo').textContent = scores.geo_score;
+    document.getElementById('sc-geo').className = 'score-val '+sc(scores.geo_score);
+    document.getElementById('sc-extract').textContent = claudeChecks.extractability_score;
+    document.getElementById('sc-extract').className = 'score-val '+sc(claudeChecks.extractability_score);
+    document.getElementById('sc-entity').textContent = claudeChecks.entity_clarity_score;
+    document.getElementById('sc-entity').className = 'score-val '+sc(claudeChecks.entity_clarity_score);
+    document.getElementById('sc-overall').textContent = claudeChecks.overall_score;
+    document.getElementById('sc-overall').className = 'score-val '+sc(claudeChecks.overall_score);
+
+    const findings = scores.template_findings || [];
+    document.getElementById('recs-template').innerHTML = findings.length
+      ? findings.map((r,i) => `<div class="rec-item"><label style="display:flex;align-items:flex-start;gap:10px;width:100%;cursor:pointer"><input type="checkbox" class="rec-checkbox" data-source="template" data-index="${i}" checked style="margin-top:3px;flex-shrink:0;width:15px;height:15px;cursor:pointer"><div style="flex:1"><span style="font-size:12px;font-weight:600;display:block;margin-bottom:2px">${r.criterion||''}</span><span style="font-size:13px">${r.finding}</span></div><span class="rec-source template">Your template</span></label></div>`).join('')
+      : '<p style="color:#888;font-size:13px">No findings generated.</p>';
+
+    const addRecs = claudeChecks.additional_recommendations || [];
+    document.getElementById('recs-claude').innerHTML = addRecs.length
+      ? addRecs.map((r,i) => `<div class="rec-item"><label style="display:flex;align-items:flex-start;gap:10px;width:100%;cursor:pointer"><input type="checkbox" class="rec-checkbox" data-source="claude" data-index="${i}" checked style="margin-top:3px;flex-shrink:0;width:15px;height:15px;cursor:pointer"><span style="font-size:13px;flex:1">${r.text}</span><span class="rec-source claude">Claude</span></label></div>`).join('')
+      : '<p style="color:#888;font-size:13px">No additional recommendations.</p>';
+
+    const wins = claudeChecks.quick_wins || [];
+    document.getElementById('quick-wins').innerHTML = wins.length
+      ? wins.map((w,i) => `<div class="checklist-item" style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:#f9f8f5;border-radius:8px;border:1px solid #e0ddd6"><label style="display:flex;align-items:flex-start;gap:8px;width:100%;cursor:pointer"><input type="checkbox" class="rec-checkbox" data-source="quickwin" data-index="${i}" checked style="margin-top:1px;flex-shrink:0;width:15px;height:15px;cursor:pointer"><span style="font-size:12px">${w}</span></label></div>`).join('')
+      : '<p style="color:#888;font-size:13px">No quick wins generated.</p>';
+
+    document.getElementById('review-results').classList.remove('hidden');
+    document.getElementById('template-notice').textContent = template
+      ? '✓ Scored against your template + Claude\'s additional checks.'
+      : '✓ No template provided — scored against general AEO/GEO best practices + Claude\'s checks.';
+    document.getElementById('btn-stage5').disabled = false;
+
+  } catch(e) {
+    document.getElementById('review-results').classList.remove('hidden');
+    document.getElementById('recs-template').innerHTML = `<span style="color:#c0392b">Error: ${e.message}</span>`;
+  }
+
+  showSpinner('spin4', false);
+  document.getElementById('btn-run-review').disabled = false;
+}
+
+async function runStage6() {
+  const contentToUpload = state.refinedContent || state.linkedContent;
+  if (!contentToUpload) return;
+  goStage(6);
+  showSpinner('spin6', true);
+  document.getElementById('upload-template').textContent = 'Compiling upload template...';
+  document.getElementById('out-sheets').textContent = 'Building Google Sheets version...';
+  document.getElementById('out-html-part1').textContent = 'Generating HTML...';
+  document.getElementById('out-html-part2').textContent = 'Generating HTML...';
+
+  try {
+    // ── Call 1: Extract all Paddle Creative upload template fields ──
+    const sys1 = `You are a content manager at Paddle Creative. Extract all fields needed for the Paddle Creative webpage upload template. Return valid JSON only — no markdown, no explanation.`;
+    const prompt1 = `Extract all fields for the Paddle Creative webpage upload template from this blog post.
+
+BLOG POST:
+${contentToUpload}
+
+TODAY'S DATE: ${new Date().toLocaleDateString('en-US', {month:'2-digit',day:'2-digit',year:'numeric'})}
+
+Return JSON:
+{
+  "name": "the full blog post title",
+  "slug": "short-url-slug (keep short if title is long)",
+  "live_date": "today's date in MM-DD-YYYY format",
+  "meta_title": "55-60 character SEO meta title",
+  "meta_description": "exactly 155 character meta description",
+  "tile_one_liner": "under 65 character summary for the post tile",
+  "tldr": ["bullet 1", "bullet 2", "bullet 3", "bullet 4", "bullet 5"],
+  "categories": ["select from: Webflow, Web Design, News, SEO & AEO, Cornwall, Marketing"],
+  "update_summary": "exactly 180 character update summary — appears on blog post hero section under the header",
+  "content_part1": "the full blog content BEFORE the mid-content CTA block (markdown)",
+  "cta_heading": "the mid-content CTA heading text only (no ## prefix)",
+  "cta_subheading": "the mid-content CTA subheading text only",
+  "content_part2": "the full blog content AFTER the mid-content CTA block through to the end (markdown)",
+  "author": "Matt Connelly",
+  "fact_checked_by": "Matt Connelly / Sam Parker",
+  "faqs": [{"question": "...", "answer": "..."}]
+}
+
+For tldr: extract or create max 5 short bullet points summarising the post.
+For categories: pick the most relevant 1-2 from the allowed list only.
+For content_part1 and content_part2: split the content at the mid-content CTA block. Do not include the CTA itself in either part.
+For faqs: extract the FAQ questions and answers from the post.`;
+
+    const raw1 = await callClaude(sys1, prompt1);
+    let meta;
+    try { meta = JSON.parse(raw1.replace(/```json|```/g,'')); } catch { meta = {}; }
+    state.uploadMeta = meta;
+
+    // ── Render the Paddle Creative upload template ──
+    const tldrBullets = (meta.tldr||[]).map(b => `• ${b}`).join('\n');
+    const faqsText = (meta.faqs||[]).map(f => `Q: ${f.question}\nA: ${f.answer}`).join('\n\n');
+
+    const templateFields = [
+      { label: 'Name', value: meta.name },
+      { label: 'Slug', value: meta.slug, note: 'Keep short if blog name is long' },
+      { label: 'Main image', value: '— Upload manually', note: 'Image upload required in Webflow' },
+      { label: 'Thumbnail image', value: '— Upload manually', note: 'Image upload required in Webflow' },
+      { label: 'Live date published', value: meta.live_date, note: 'US format: MM-DD-YYYY' },
+      { label: 'Meta Title', value: meta.meta_title, note: '55-60 characters', count: (meta.meta_title||'').length },
+      { label: 'Meta Description', value: meta.meta_description, note: '155 characters', count: (meta.meta_description||'').length },
+      { label: 'Tile 1-Liner', value: meta.tile_one_liner, note: 'Under 65 characters — goes on post tile', count: (meta.tile_one_liner||'').length },
+      { label: 'TLDR', value: tldrBullets, note: 'Max 5 bullet points' },
+      { label: 'Blog Category(s)', value: (meta.categories||[]).join(', '), note: 'Webflow, Web Design, News, SEO & AEO, Cornwall, Marketing' },
+      { label: 'Update Summary', value: meta.update_summary, note: '180 characters — appears on hero section under header', count: (meta.update_summary||'').length },
+      { label: 'Content (Part 1 — Before the CTA)', value: meta.content_part1, large: true },
+      { label: 'Within Content CTA', value: 'On', note: 'Turn this on in Webflow to show CTA within content' },
+      { label: 'CTA Heading', value: meta.cta_heading },
+      { label: 'CTA Subheading', value: meta.cta_subheading },
+      { label: 'Content (Part 2 — After the CTA)', value: meta.content_part2, large: true },
+      { label: 'Author', value: state.author ? state.author.name : meta.author },
+      { label: 'Fact Checked By', value: meta.fact_checked_by },
+      { label: 'FAQs to show', value: faqsText },
+    ];
+
+    document.getElementById('upload-template').innerHTML = templateFields.map(f => `
+      <div class="upload-field" style="${f.large ? 'background:#f0f0eb' : ''}">
+        <div class="field-label" style="display:flex;justify-content:space-between;align-items:center">
+          <span>${f.label}</span>
+          ${f.count !== undefined ? `<span style="font-size:10px;color:${f.count > (f.label.includes('Meta Title') ? 60 : f.label.includes('Tile') ? 65 : 180) ? '#c0392b' : '#2d7a4f'}">${f.count} chars</span>` : ''}
+        </div>
+        ${f.note ? `<div style="font-size:10px;color:#aaa;margin-bottom:4px">${f.note}</div>` : ''}
+        <div class="field-val" style="white-space:pre-wrap;${f.large ? 'max-height:200px;overflow-y:auto;font-size:12px' : ''}">${f.value || '—'}</div>
+      </div>`).join('');
+
+    // Store for copy function
+    state.templateFields = templateFields;
+
+    // ── Build Google Sheets tab-separated version ──
+    const sheetsRows = templateFields.map(f => {
+      const val = (f.value || '—').split('\t').join(' ').split('\n').join(' | ');
+      return f.label + '\t' + val;
+    });
+    const sheetsText = sheetsRows.join('\n');
+    document.getElementById('out-sheets').textContent = sheetsText;
+    state.sheetsText = sheetsText;
+
+    // ── Call 2: Convert content parts to HTML ──
+    const sys2 = `Convert markdown blog content to clean semantic HTML for Webflow. Use <h2>, <h3>, <p>, <ul>, <li>, <strong>, <a> tags. No <h1> — that is handled separately. No wrapping article tag. Return only the HTML — no explanation, no backticks.`;
+
+    if (meta.content_part1) {
+      const html1 = await callClaude(sys2, `Convert to HTML for Webflow:
+
+${meta.content_part1}`);
+      document.getElementById('out-html-part1').textContent = html1;
+      state.htmlPart1 = html1;
+    } else {
+      document.getElementById('out-html-part1').textContent = '— No Part 1 content extracted';
+    }
+
+    if (meta.content_part2) {
+      const html2 = await callClaude(sys2, `Convert to HTML for Webflow:
+
+${meta.content_part2}`);
+      document.getElementById('out-html-part2').textContent = html2;
+      state.htmlPart2 = html2;
+    } else {
+      document.getElementById('out-html-part2').textContent = '— No Part 2 content extracted';
+    }
+
+  } catch(e) {
+    document.getElementById('upload-template').innerHTML = `<span style="color:#c0392b">Error: ${e.message}</span>`;
+  }
+  showSpinner('spin6', false);
+}
+
+async function runRefineAgain() {
+  const base = state.refinedContent || state.linkedContent;
+  if (!base) return;
+  showSpinner('spin-refine-again', true);
+  document.getElementById('btn-refine-again').disabled = true;
+
+  // Collect checked further recs + manual instructions
+  const checkedRecs = [];
+  document.querySelectorAll('.again-checkbox:checked').forEach(cb => {
+    const idx = parseInt(cb.dataset.index);
+    if (state.furtherRecs?.[idx]) checkedRecs.push(state.furtherRecs[idx].text);
+  });
+  const extraInstructions = document.getElementById('inp-refine-extra').value.trim();
+  if (extraInstructions) checkedRecs.push(extraInstructions);
+
+  if (checkedRecs.length === 0) {
+    alert('Please tick at least one recommendation or add your own instructions before refining again.');
+    showSpinner('spin-refine-again', false);
+    document.getElementById('btn-refine-again').disabled = false;
+    return;
+  }
+
+  try {
+    const sys = `You are a senior content editor at Paddle Creative. Refine this already-improved blog post further based on the recommendations provided. Keep all existing improvements, CTAs, and internal links intact. Return only the full improved blog post in markdown — no preamble.`;
+    const prompt = `Further refine this blog post based on these additional recommendations:
+
+BLOG POST:
+${base}
+
+FURTHER RECOMMENDATIONS:
+${checkedRecs.map((r,i) => `${i+1}. ${r}`).join('\n')}
+
+Return the full further-refined blog post now.`;
+
+    const refined2 = (await callClaude(sys, prompt)).replace(/—/g, '–');
+    state.refinedContent = refined2;
+
+    // Update the refined content output box
+    document.getElementById('out-refined').textContent = refined2;
+
+    // Re-score again
+    document.getElementById('rescore-status').textContent = 'Re-scoring...';
+    const rescoreSys = `You are an AEO/GEO expert reviewer. Score content against the Paddle Creative optimisation template. Return valid JSON only.`;
+    const rescorePrompt = `Score this blog post. Return JSON: {"template_score": 0-100, "aeo_score": 0-100, "geo_score": 0-100, "overall_score": 0-100, "improvement_summary": "1-2 sentence summary of content quality"}
+
+BLOG POST:
+${refined2}`;
+    const rescoreRaw = await callClaude(rescoreSys, rescorePrompt);
+    let rescore2;
+    try { rescore2 = JSON.parse(rescoreRaw.replace(/```json|```/g,'')); } catch { rescore2 = null; }
+    if (rescore2) {
+      state.refinedScores = rescore2;
+      const sc = v => v >= 80 ? 'high' : v >= 60 ? 'mid' : 'low';
+      const orig = state.scores || {};
+      const diff = (newVal, oldVal) => {
+        const d = (newVal||0) - (oldVal||0);
+        return d > 0 ? `<span style="color:#2d7a4f;font-size:11px;margin-left:4px">+${d}</span>` : d < 0 ? `<span style="color:#c0392b;font-size:11px;margin-left:4px">${d}</span>` : `<span style="color:#888;font-size:11px;margin-left:4px">–</span>`;
+      };
+      document.getElementById('rescore-grid').innerHTML = `
+        <div class="score-card"><div class="score-val ${sc(rescore2.template_score)}">${rescore2.template_score}${diff(rescore2.template_score, orig.template_score)}</div><div class="score-label">Template score</div></div>
+        <div class="score-card"><div class="score-val ${sc(rescore2.aeo_score)}">${rescore2.aeo_score}${diff(rescore2.aeo_score, orig.aeo_score)}</div><div class="score-label">AEO</div></div>
+        <div class="score-card"><div class="score-val ${sc(rescore2.geo_score)}">${rescore2.geo_score}${diff(rescore2.geo_score, orig.geo_score)}</div><div class="score-label">GEO</div></div>
+        <div class="score-card"><div class="score-val ${sc(rescore2.overall_score)}">${rescore2.overall_score}${diff(rescore2.overall_score, orig.overall_score)}</div><div class="score-label">Overall</div></div>`;
+      document.getElementById('rescore-status').textContent = rescore2.improvement_summary || 'Re-scored.';
+    }
+
+    // Clear the textarea and update notice
+    document.getElementById('inp-refine-extra').value = '';
+    document.getElementById('refine-notice').textContent = '✓ Content refined again and ready for upload.';
+    document.getElementById('refine-again-recs').innerHTML = '<p style="color:#2d7a4f;font-size:13px">✓ Refinement applied. Run again if needed.</p>';
+    document.getElementById('refine-again-count').textContent = '';
+
+  } catch(e) {
+    alert('Error during refinement: ' + e.message);
+  }
+  showSpinner('spin-refine-again', false);
+  document.getElementById('btn-refine-again').disabled = false;
+}
+
+function toggleFurtherRecs(checked) {
+  document.querySelectorAll('.again-checkbox').forEach(cb => cb.checked = checked);
+}
+
+function toggleAllRecs(source, checked) {
+  document.querySelectorAll(`.rec-checkbox[data-source="${source}"]`).forEach(cb => cb.checked = checked);
+}
+
+
+function copyUploadTemplate() {
+  const fields = state.templateFields || [];
+  const text = fields.map(f => `${f.label}\n${f.value || '—'}`).join('\n\n---\n\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('[onclick="copyUploadTemplate()"]');
+    if (btn) { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy all fields', 1500); }
+  });
+}
+
+
+async function runStage5Refine() {
+  if (!state.linkedContent) { alert('Please complete stages 1-4 first.'); return; }
+  showSpinner('spin5', true);
+  document.getElementById('btn-run-refine').disabled = true;
+  document.getElementById('refine-results').classList.add('hidden');
+
+  // Collect only checked recommendations
+  const allRecs = [];
+  document.querySelectorAll('.rec-checkbox:checked').forEach(cb => {
+    const src = cb.dataset.source;
+    const idx = parseInt(cb.dataset.index);
+    if (src === 'template' && state.scores?.template_findings?.[idx]) allRecs.push(state.scores.template_findings[idx].finding);
+    if (src === 'claude' && state.scores?.additional_recommendations?.[idx]) allRecs.push(state.scores.additional_recommendations[idx].text);
+    if (src === 'quickwin' && state.scores?.quick_wins?.[idx]) allRecs.push(state.scores.quick_wins[idx]);
+  });
+  const skippedCount = document.querySelectorAll('.rec-checkbox:not(:checked)').length;
+
+  try {
+    const sys = `You are a senior content editor at Paddle Creative. You are given a blog post and a list of improvement recommendations from an AEO/GEO review. Your job is to rewrite and improve the blog post to address every recommendation, while keeping the core content, structure, TOV, and CTA intact. Return only the improved blog post in markdown — no preamble or explanation.`;
+    const prompt = `Improve this blog post based on the review recommendations below. Address every recommendation where possible without changing the core message, CTA, or internal links.
+
+BLOG POST:
+${state.linkedContent}
+
+RECOMMENDATIONS TO ADDRESS:
+${allRecs.length ? allRecs.map((r,i) => `${i+1}. ${r}`).join('\n') : 'General improvements: improve clarity, extractability, and AI readiness throughout.'}
+
+Return the full improved blog post now.`;
+
+    state.refinedContent = (await callClaude(sys, prompt)).replace(/—/g, '–');
+    document.getElementById('out-refined').textContent = state.refinedContent;
+
+    const sys2 = `You are a content reviewer. Compare an original and refined blog post and write a brief plain-text summary of the key improvements made. Be specific and concise — bullet points, 5-8 items. No preamble.`;
+    const summary = await callClaude(sys2, `ORIGINAL:\n${state.linkedContent}\n\nREFINED:\n${state.refinedContent}\n\nList the key improvements made.`);
+    document.getElementById('refine-summary').textContent = summary;
+
+    document.getElementById('refine-results').classList.remove('hidden');
+    document.getElementById('refine-notice').textContent = '✓ Content refined and ready for upload.';
+
+    // ── Re-score the refined content ──
+    document.getElementById('rescore-results').classList.remove('hidden');
+    document.getElementById('rescore-status').textContent = 'Scoring refined content...';
+    try {
+      const rescoreSys = `You are an AEO/GEO expert reviewer. Score content against the Paddle Creative optimisation template. Return valid JSON only.`;
+      const rescorePrompt = `Score this refined blog post. Return JSON: {"template_score": 0-100, "aeo_score": 0-100, "geo_score": 0-100, "overall_score": 0-100, "improvement_summary": "1-2 sentence summary of how this compares to the original"}
+
+BLOG POST:
+${state.refinedContent}`;
+      const rescoreRaw = await callClaude(rescoreSys, rescorePrompt);
+      let rescore;
+      try { rescore = JSON.parse(rescoreRaw.replace(/```json|```/g,'')); } catch { rescore = null; }
+      if (rescore) {
+        state.refinedScores = rescore;
+        const sc = v => v >= 80 ? 'high' : v >= 60 ? 'mid' : 'low';
+        const orig = state.scores || {};
+        const diff = (newVal, oldVal) => {
+          const d = (newVal||0) - (oldVal||0);
+          return d > 0 ? `<span style="color:#2d7a4f;font-size:11px;margin-left:4px">+${d}</span>` : d < 0 ? `<span style="color:#c0392b;font-size:11px;margin-left:4px">${d}</span>` : `<span style="color:#888;font-size:11px;margin-left:4px">–</span>`;
+        };
+        document.getElementById('rescore-grid').innerHTML = `
+          <div class="score-card"><div class="score-val ${sc(rescore.template_score)}">${rescore.template_score}${diff(rescore.template_score, orig.template_score)}</div><div class="score-label">Template score</div></div>
+          <div class="score-card"><div class="score-val ${sc(rescore.aeo_score)}">${rescore.aeo_score}${diff(rescore.aeo_score, orig.aeo_score)}</div><div class="score-label">AEO</div></div>
+          <div class="score-card"><div class="score-val ${sc(rescore.geo_score)}">${rescore.geo_score}${diff(rescore.geo_score, orig.geo_score)}</div><div class="score-label">GEO</div></div>
+          <div class="score-card"><div class="score-val ${sc(rescore.overall_score)}">${rescore.overall_score}${diff(rescore.overall_score, orig.overall_score)}</div><div class="score-label">Overall</div></div>`;
+        document.getElementById('rescore-status').textContent = rescore.improvement_summary || 'Rescored successfully.';
+
+        // ── Generate further recommendations for refine-again ──
+        document.getElementById('refine-again-card').classList.remove('hidden');
+        document.getElementById('refine-again-recs').textContent = 'Generating further recommendations...';
+        try {
+          const furtherSys = `You are an AEO/GEO content expert. Review a blog post that has already been refined once and identify remaining improvements. Return valid JSON only.`;
+          const furtherPrompt = `This blog post has already been through one round of refinement. Identify the most important remaining improvements needed to maximise its AEO/GEO score and AI search visibility.
+
+BLOG POST:
+${state.refinedContent}
+
+Current scores — Template: ${rescore.template_score}, AEO: ${rescore.aeo_score}, GEO: ${rescore.geo_score}, Overall: ${rescore.overall_score}
+
+Return JSON: {"further_recommendations": [{"type": "ok|warn|fix", "text": "specific actionable recommendation"}]}
+Include 4-6 recommendations. Focus on what would make the biggest difference to the remaining gaps.`;
+          const furtherRaw = await callClaude(furtherSys, furtherPrompt);
+          let further;
+          try { further = JSON.parse(furtherRaw.replace(/```json|```/g,'')); } catch { further = {further_recommendations:[]}; }
+          state.furtherRecs = further.further_recommendations || [];
+          document.getElementById('refine-again-recs').innerHTML = state.furtherRecs.length
+            ? `<div style="margin-bottom:8px;display:flex;gap:6px"><button onclick="toggleFurtherRecs(true)" class="copy-btn">Select all</button><button onclick="toggleFurtherRecs(false)" class="copy-btn">Deselect all</button></div>` +
+              state.furtherRecs.map((r,i) => `<div class="rec-item"><label style="display:flex;align-items:flex-start;gap:10px;width:100%;cursor:pointer"><input type="checkbox" class="again-checkbox" data-index="${i}" checked style="margin-top:3px;flex-shrink:0;width:15px;height:15px;cursor:pointer"><div class="rec-dot ${r.type}" style="margin-top:5px;flex-shrink:0"></div><span style="font-size:13px;flex:1">${r.text}</span></label></div>`).join('')
+            : '<p style="color:#888;font-size:13px">No further recommendations generated — content looks good!</p>';
+          const count = state.furtherRecs.length;
+          document.getElementById('refine-again-count').textContent = count ? `${count} recommendation${count!==1?'s':''} ready` : '';
+        } catch(e2) {
+          document.getElementById('refine-again-recs').textContent = 'Could not generate further recommendations.';
+        }
+      }
+    } catch(e) {
+      document.getElementById('rescore-status').textContent = 'Could not rescore — ' + e.message;
+    }
+    document.getElementById('btn-stage6').disabled = false;
+
+    // ── Show refine-again card with fresh recommendations ──
+    try {
+      const againSys = `You are an AEO/GEO content expert. Given a refined blog post and its scores, identify 3-5 specific remaining improvements that would push the scores higher. Return valid JSON only.`;
+      const againPrompt = `This blog post has been refined. Scores: Template ${rescore ? rescore.template_score : '?'}/100, AEO ${rescore ? rescore.aeo_score : '?'}/100, GEO ${rescore ? rescore.geo_score : '?'}/100, Overall ${rescore ? rescore.overall_score : '?'}/100.
+
+BLOG POST:
+${state.refinedContent}
+
+Identify 3-5 specific remaining improvements. Return JSON: {"recommendations": [{"type": "ok|warn|fix", "text": "specific recommendation"}]}`;
+      const againRaw = await callClaude(againSys, againPrompt);
+      let againParsed;
+      try { againParsed = JSON.parse(againRaw.replace(/```json|```/g,'')); } catch { againParsed = {recommendations:[]}; }
+      state.furtherRecs = againParsed.recommendations || [];
+      const againEl = document.getElementById('refine-again-recs');
+      if (state.furtherRecs.length) {
+        againEl.innerHTML = state.furtherRecs.map((r,i) => `<div class="rec-item"><label style="display:flex;align-items:flex-start;gap:10px;width:100%;cursor:pointer"><input type="checkbox" class="again-checkbox" data-index="${i}" checked style="margin-top:3px;flex-shrink:0;width:15px;height:15px;cursor:pointer"><div style="flex:1"><div class="rec-dot ${r.type}" style="display:inline-block;margin-right:6px;vertical-align:middle"></div><span style="font-size:13px">${r.text}</span></div></label></div>`).join('');
+      } else {
+        againEl.innerHTML = '<p style="color:#888;font-size:13px">No further recommendations — content looks strong!</p>';
+      }
+      document.getElementById('refine-again-card').classList.remove('hidden');
+    } catch(e) {
+      document.getElementById('refine-again-recs').textContent = 'Could not generate further recommendations.';
+      document.getElementById('refine-again-card').classList.remove('hidden');
+    }
+  } catch(e) {
+    document.getElementById('refine-results').classList.remove('hidden');
+    document.getElementById('out-refined').innerHTML = `<span style="color:#c0392b">Error: ${e.message}</span>`;
+  }
+  showSpinner('spin5', false);
+  document.getElementById('btn-run-refine').disabled = false;
+}
+
+function copyText(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    document.querySelectorAll('.copy-btn').forEach(b => {
+      if(b.getAttribute('onclick')?.includes(id)) {
+        const orig = b.textContent;
+        b.textContent = 'Copied!';
+        setTimeout(() => b.textContent = orig, 1500);
+      }
+    });
+  });
+}
+
+function startOver() {
+  state = {};
+  document.getElementById('progress').style.width = '20%';
+  document.getElementById('review-results').classList.add('hidden');
+  document.getElementById('refine-results') && document.getElementById('refine-results').classList.add('hidden');
+  document.getElementById('btn-stage5').disabled = true;
+  document.getElementById('btn-stage6') && (document.getElementById('btn-stage6').disabled = true);
+  document.getElementById('btn-run-review').disabled = false;
+  document.getElementById('btn-run-refine') && (document.getElementById('btn-run-refine').disabled = false);
+  goStage(1);
+}
+</script>
+</body>
+</html>
