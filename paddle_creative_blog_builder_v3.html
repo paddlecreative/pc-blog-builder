@@ -8,6 +8,40 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
 <style>
+/* PP Editorial New — self-hosted. Add font files to /fonts/ in the repo. */
+@font-face {
+  font-family: 'PP Editorial New';
+  src: url('/fonts/PPEditorialNew-Regular.woff2') format('woff2'),
+       url('/fonts/PPEditorialNew-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'PP Editorial New';
+  src: url('/fonts/PPEditorialNew-Italic.woff2') format('woff2'),
+       url('/fonts/PPEditorialNew-Italic.woff') format('woff');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'PP Editorial New';
+  src: url('/fonts/PPEditorialNew-Ultrabold.woff2') format('woff2'),
+       url('/fonts/PPEditorialNew-Ultrabold.woff') format('woff');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'PP Editorial New';
+  src: url('/fonts/PPEditorialNew-UltraboldItalic.woff2') format('woff2'),
+       url('/fonts/PPEditorialNew-UltraboldItalic.woff') format('woff');
+  font-weight: 800;
+  font-style: italic;
+  font-display: swap;
+}
+
 /* Paddle Creative brand tokens */
 :root {
   --navy:      #0D0D4A;
@@ -33,10 +67,11 @@ body { font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif
 
 /* Header */
 .header { display: flex; align-items: center; gap: 14px; margin-bottom: 2rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
-.logo { width: 40px; height: 40px; flex-shrink: 0; }
-.logo svg { width: 40px; height: 40px; }
-.header-text h1 { font-size: 17px; font-weight: 700; color: var(--navy); letter-spacing: -0.01em; }
-.header-text p { font-size: 12px; color: var(--muted); margin-top: 1px; }
+.logo { width: 44px; height: 44px; flex-shrink: 0; }
+.logo svg { width: 44px; height: 44px; }
+.header-text h1 { font-family: 'PP Editorial New', Georgia, serif; font-size: 19px; font-weight: 400; font-style: italic; color: var(--navy); letter-spacing: -0.01em; }
+.header-text h1 em { font-style: normal; }
+.header-text p { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: 'Inter Tight', sans-serif; }
 
 /* API Key banner */
 .api-banner { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; }
@@ -66,8 +101,8 @@ body { font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif
 
 /* Cards */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
-.card h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; color: var(--navy); letter-spacing: -0.01em; }
-.card .desc { font-size: 13px; color: var(--muted); margin-bottom: 1.25rem; }
+.card h2 { font-family: 'PP Editorial New', Georgia, serif; font-size: 16px; font-weight: 400; font-style: italic; margin-bottom: 4px; color: var(--navy); letter-spacing: -0.01em; }
+.card .desc { font-size: 13px; color: var(--muted); margin-bottom: 1.25rem; font-family: 'Inter Tight', sans-serif; }
 
 /* Forms */
 label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
@@ -166,15 +201,23 @@ textarea { min-height: 85px; }
 
   <div class="header">
     <div class="logo">
-      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 121.52 121.52">
         <defs>
-          <linearGradient id="pc-grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#00B8B0"/>
-            <stop offset="100%" stop-color="#0D0D4A"/>
+          <clipPath id="pc-logo-clip">
+            <path d="M0,32.53A32.53,32.53,0,1,0,32.53,0,32.53,32.53,0,0,0,0,32.53" transform="translate(28.23 28.23)"/>
+          </clipPath>
+          <linearGradient id="pc-logo-grad" x1="-714.59" y1="314.18" x2="-713.59" y2="314.18" gradientTransform="translate(48846.24 -21443.13) scale(68.35)" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#05508d"/>
+            <stop offset="0.25" stop-color="#1882a4"/>
+            <stop offset="0.52" stop-color="#2fbec0"/>
+            <stop offset="0.67" stop-color="#60cccf"/>
+            <stop offset="1" stop-color="#d2edf3"/>
           </linearGradient>
         </defs>
-        <circle cx="20" cy="20" r="20" fill="url(#pc-grad)"/>
-        <path d="M14 11h7.5a6.5 6.5 0 0 1 0 13H17v5h-3V11zm3 3v7h4.5a3.5 3.5 0 0 0 0-7H17z" fill="#fff"/>
+        <g clip-path="url(#pc-logo-clip)">
+          <rect x="-11.93" y="-11.93" width="88.91" height="88.91" transform="translate(16.3 48.93) rotate(-30.1)" fill="url(#pc-logo-grad)"/>
+        </g>
+        <path d="M21.05,39.26h-7a5.67,5.67,0,0,0,5.67,5.67h.73l-.77,7.88a5.65,5.65,0,0,0,6.18-5.07l.28-2.81h7.74c8.95,0,16.76-6.89,17-15.83A16.37,16.37,0,0,0,23.32,16.73l0,0L21.2,37.91l-.15,1.35m24.22-9.62c-.55,5.56-5.56,9.62-11.14,9.62H26.76l.3-3.16,1.61-16.41a10.71,10.71,0,0,1,16.6,10Z" transform="translate(28.23 28.23)" fill="#fff"/>
       </svg>
     </div>
     <div class="header-text">
