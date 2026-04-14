@@ -593,7 +593,6 @@ async function runStage2() {
   const title = document.getElementById('inp-title').value.trim();
   const overview = document.getElementById('inp-overview').value.trim();
   if (!title || !overview) { alert('Please add a title and overview first.'); return; }
-  if (!getKey()) { alert('Please enter your Anthropic API key first (starts with sk-ant-).'); return; }
 
   state.title = title;
   state.overview = overview;
