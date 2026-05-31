@@ -729,6 +729,7 @@ const BRANDS = {
       brands: 'https://www.terpenejourney.com/brands',
       blog: 'https://www.terpenejourney.com/blog',
       communities: 'https://www.terpenejourney.com/communities',
+      terpGenie: 'https://www.terpenejourney.com/terp-genie',
       // Terpene profile pages, keyed by terpene
       terpenes: {
         Terpinolene:  'https://www.terpenejourney.com/cannabis-terpene/terpinolene',
@@ -820,11 +821,13 @@ Format all headings as markdown (# H1, ## H2, ### H3). Do NOT number the heading
       Object.keys(L.terpenes).forEach(t => { if (!terps.has(t)) lines.push(`- ${t} terpene profile: ${L.terpenes[t]}`); });
       Object.entries(L.activities).forEach(([k, v]) => lines.push(`- ${k} activity page: ${v}`));
       Object.entries(L.edibles).forEach(([k, v]) => lines.push(`- ${k} edibles: ${v}`));
+      lines.push(`- Terp Genie, the terpene recommendation tool: ${L.terpGenie}`);
       lines.push(`- Terpene Journey home: ${L.site}`);
       lines.push(`- About Terpene Journey: ${L.about}`);
       lines.push(`- Brands we carry: ${L.brands}`);
       lines.push(`- The blog: ${L.blog}`);
       lines.push(`- Communities: ${L.communities}`);
+      lines.push(`- The Entourage Builder is a tool available across the Terpene Journey site (no single page URL). Refer to it by name where relevant and link it to Terp Genie ${L.terpGenie} or the home page ${L.site}.`);
       return lines.join('\n');
     },
 
