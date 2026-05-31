@@ -61,6 +61,25 @@
   --red:       #C0392B;
 }
 
+/* Terpene Journey theme — warm, botanical: deep forest green + amber/leaf accents */
+body.brand-terpene {
+  --navy:      #1F3D2B;   /* deep forest green (primary) */
+  --teal:      #5A8F3C;   /* fresh leaf green (accent / progress) */
+  --teal-dark: #45702E;
+  --orchid:    #C9A227;   /* amber/gold */
+  --bg:        #F6F4EC;   /* warm paper */
+  --surface:   #FFFFFF;
+  --surface2:  #F1ECDD;   /* soft sand */
+  --border:    #DED8C4;
+  --border2:   #CFC6A8;
+  --muted:     #6E7763;   /* muted sage */
+  --text:      #20271C;
+  --mint-bg:   #E7F0DA;   /* pale leaf */
+  --mint-text: #45702E;
+  --amber:     #9A7B1A;
+  --red:       #B23A2E;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
 .app { max-width: 820px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
@@ -203,7 +222,7 @@ textarea { min-height: 85px; }
 <div class="app">
 
   <div class="header">
-    <div class="logo">
+    <div class="logo" id="header-logo">
       <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 121.52 121.52">
         <defs>
           <clipPath id="pc-logo-clip">
@@ -224,13 +243,13 @@ textarea { min-height: 85px; }
       </svg>
     </div>
     <div class="header-text">
-      <h1>Paddle Creative — Blog Builder</h1>
-      <p>AEO/GEO + AI Search optimised content pipeline</p>
+      <h1 id="brand-title">Blog Builder</h1>
+      <p id="brand-subtitle">Select a brand to begin</p>
     </div>
   </div>
 
 
-  <div class="progress-bar-wrap">
+  <div class="progress-bar-wrap" id="progress-bar-wrap" style="display:none">
     <div class="progress-bar" id="progress" style="width:20%"></div>
   </div>
 
@@ -246,7 +265,23 @@ textarea { min-height: 85px; }
     <button class="share-copy-btn" onclick="copyShareLink()">Copy link</button>
   </div>
 
-  <div class="stage-nav">
+  <!-- STAGE 0: Brand selection -->
+  <div class="panel active" id="stage0">
+    <div class="card" style="max-width:520px;margin:0 auto;text-align:center">
+      <h2>Which brand are you writing for?</h2>
+      <p class="desc">Pick a brand. The whole pipeline — tone of voice, structure, review checks and the upload template — adapts to that brand.</p>
+      <div class="form-row" style="text-align:left">
+        <label>Brand</label>
+        <select id="inp-brand">
+          <option value="paddle">Paddle Creative</option>
+          <option value="terpene">Terpene Journey</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="selectBrand()">Continue →</button>
+    </div>
+  </div>
+
+  <div class="stage-nav" id="stage-nav" style="display:none">
     <button class="stage-btn active" onclick="goStage(1)" id="snav1"><span class="stage-num">1</span>Brief</button>
     <button class="stage-btn" onclick="goStage(2)" id="snav2"><span class="stage-num">2</span>Write</button>
     <button class="stage-btn" onclick="goStage(3)" id="snav3"><span class="stage-num">3</span>Links</button>
@@ -256,10 +291,10 @@ textarea { min-height: 85px; }
   </div>
 
   <!-- STAGE 1 -->
-  <div class="panel active" id="stage1">
+  <div class="panel" id="stage1">
     <div class="card">
       <h2>Blog brief</h2>
-      <p class="desc">Provide the page details and Paddle Creative will take it from here.</p>
+      <p class="desc" id="brief-desc">Provide the page details and Paddle Creative will take it from here.</p>
       <div class="form-row">
         <label>Page title</label>
         <input type="text" id="inp-title" placeholder="e.g. Why Brand Strategy Should Come Before Visual Identity">
@@ -294,13 +329,12 @@ textarea { min-height: 85px; }
         <label>Primary keyword / search intent</label>
         <input type="text" id="inp-keyword" placeholder="e.g. brand strategy agency">
       </div>
+
+      <!-- Brand-specific brief fields injected here by applyBrand() -->
+      <div id="brand-brief-fields"></div>
       <div class="form-row">
         <label>Author</label>
-        <select id="inp-author">
-          <option value="sam">Sam Parker</option>
-          <option value="bogdan">Bogdan Dumitrache</option>
-          <option value="matt">Matt Connelly</option>
-        </select>
+        <select id="inp-author"></select>
       </div>
 
       <div class="form-row">
@@ -320,10 +354,10 @@ textarea { min-height: 85px; }
   <div class="panel" id="stage2">
     <div class="card">
       <h2>AEO/GEO optimised blog post</h2>
-      <p class="desc">Written in Paddle Creative's TOV, structured for AI search extraction.</p>
+      <p class="desc" id="stage2-desc">Written in Paddle Creative's TOV, structured for AI search extraction.</p>
       <div style="background:#f0f7ff;border:1px solid #c5d9f5;border-radius:8px;padding:12px 16px;margin-bottom:1.25rem;">
         <div style="font-size:12px;font-weight:600;color:#2c5fa8;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em">Every post is automatically built to include</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;" id="stage2-inclusions">
           <div style="font-size:12px;color:#0D0D4A;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>TL;DR at the top (max 5 bullet points)</span></div>
           <div style="font-size:12px;color:#0D0D4A;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Primary term definition</span></div>
           <div style="font-size:12px;color:#0D0D4A;display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>Quick Answer section</span></div>
@@ -390,9 +424,9 @@ textarea { min-height: 85px; }
     <div class="card">
       <h2>Paste your AEO/GEO optimisation template</h2>
       <p class="desc">Claude will score the content against your specific criteria first, then layer in its own AI readiness checks on top.</p>
-      <div class="template-notice" id="template-notice">Paddle Creative AEO/GEO template is pre-loaded. Click Run full review to score this post.</div>
-      <div style="background:#D4F5F2;border:1px solid #9addd9;border-radius:8px;padding:10px 14px;margin-bottom:1.25rem;font-size:13px;color:#007A76">
-        ✓ Paddle Creative AEO/GEO template loaded automatically — no need to paste it in.
+      <div class="template-notice" id="template-notice">The brand's AEO/GEO template is pre-loaded. Click Run full review to score this post.</div>
+      <div style="background:#D4F5F2;border:1px solid #9addd9;border-radius:8px;padding:10px 14px;margin-bottom:1.25rem;font-size:13px;color:#007A76" id="template-loaded-note">
+        ✓ The brand AEO/GEO template is loaded automatically — no need to paste it in.
       </div>
       <input type="hidden" id="inp-template" value="">
       <button class="btn btn-primary" onclick="runStage4Score()" id="btn-run-review">
@@ -427,8 +461,8 @@ textarea { min-height: 85px; }
       </div>
 
       <div class="card" id="tone-check-card">
-        <h2>Paddle Creative Tone of Voice Check</h2>
-        <p class="desc">Reviewed against the Paddle Creative tone of voice — banned language, swap test, positioning, British English, and channel register.</p>
+        <h2 id="tone-check-title">Paddle Creative Tone of Voice Check</h2>
+        <p class="desc" id="tone-check-desc">Reviewed against the Paddle Creative tone of voice — banned language, swap test, positioning, British English, and channel register.</p>
         <div id="tone-verdict" style="margin-bottom:1rem">Waiting...</div>
         <div id="tone-issues-wrap" class="hidden">
           <div class="rec-section-title" style="margin-bottom:8px">Issues</div>
@@ -518,15 +552,15 @@ textarea { min-height: 85px; }
   </div>
 
   <!-- STAGE 6 -->
-  <div class="panel" id="stage5">
+  <div class="panel" id="stage6">
 
-    <!-- Paddle Creative Upload Template -->
+    <!-- Brand Upload Template -->
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-        <h2>Paddle Creative — Webpage upload template</h2>
+        <h2 id="upload-template-title">Paddle Creative — Webpage upload template</h2>
         <button class="copy-btn" onclick="copyUploadTemplate()">Copy all fields</button>
       </div>
-      <p class="desc">Add content into each field so it can be uploaded to Paddle Creative's website with ease.</p>
+      <p class="desc" id="upload-template-desc">Add content into each field so it can be uploaded to Paddle Creative's website with ease.</p>
       <div id="upload-template">Compiling...</div>
     </div>
 
@@ -588,6 +622,380 @@ const AUTHOR_DATA = {
   }
 };
 
+// ── Terpene Journey authors (sourced from the brand's CMS "Written By" list) ───
+// `slug` is the value the CMS stores in the "Written By" field. Bios live in a
+// separate CMS author collection, so most are blank here (only Justin's is set).
+const TERPENE_AUTHORS = {
+  "terpene-journey":          { name: "Terpene Journey Team", slug: "terpene-journey",          role: "Terpene Journey", bio: "" },
+  "katy-oshea":               { name: "Katy O'Shea",          slug: "katy-oshea",               role: "Terpene Journey", bio: "" },
+  "todd-davis":               { name: "Todd Davis",           slug: "todd-davis",               role: "Terpene Journey", bio: "" },
+  "meghan-weiner":            { name: "Meghan Weiner",        slug: "meghan-weiner",            role: "Terpene Journey", bio: "" },
+  "johancy-santana-santillan":{ name: "Johancy Santana-Santillan", slug: "johancy-santana-santillan", role: "Terpene Journey", bio: "" },
+  "jordan-michaela":          { name: "Jordan Michaela",      slug: "jordan-michaela",          role: "Terpene Journey", bio: "" },
+  "justin-eppley":            { name: "Justin Eppley",        slug: "justin-eppley",            role: "Co-Founder & COO", bio: "Justin Eppley is Co-Founder and Chief Operating Officer of Terpene Journey, where he leads data strategy, analytics, and product innovation at the intersection of consumer behavior and cannabis science. At Terpene Journey, Justin oversees the research and data infrastructure behind proprietary customer-facing tools including Terp Genie, the Entourage Builder, and Terp Rewards. His work focuses on translating complex terpene, cannabinoid, and behavioral data into intuitive systems that help consumers make smarter, more personalized product decisions." }
+};
+
+// Terpene Journey: eight effects mapped to their lead terpene
+const TJ_EFFECT_TERPENE = {
+  "Stimulate": "Terpinolene",
+  "Happy / Motivate": "Limonene",
+  "Release / Relieve": "Caryophyllene",
+  "Balance": "Humulene",
+  "Focus": "Pinene",
+  "Flow": "Bisabolol",
+  "Sedate": "Myrcene",
+  "Calm": "Linalool"
+};
+
+// Terpene Journey: a simple botanical leaf mark used in the header
+const TERPENE_LOGO_SVG = `<svg viewBox="0 0 48 48" width="48" height="48" fill="none" aria-label="Terpene Journey logo">
+  <circle cx="24" cy="24" r="24" fill="#1F3D2B"/>
+  <path d="M24 9c8 4 12 11 12 18 0 6-4 11-12 12-8-1-12-6-12-12 0-7 4-14 12-18z" fill="#5A8F3C"/>
+  <path d="M24 11v30M24 41c-4-6-8-9-11-10M24 33c3-4 6-6 10-7M24 25c-3-4-6-5-9-6M24 19c3-3 5-4 8-5" stroke="#C9A227" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+</svg>`;
+
+// ── BRAND CONFIG ──────────────────────────────────────────────────────────────
+// Each brand owns its metadata and (for Terpene Journey) its prompt builders.
+// Paddle Creative keeps its original inline logic in the stage functions; the
+// stage functions branch to the brand config when state.brand === 'terpene'.
+const BRANDS = {
+  paddle: {
+    id: 'paddle',
+    name: 'Paddle Creative',
+    headerTitle: 'Paddle Creative — Blog Builder',
+    headerSubtitle: 'AEO/GEO + AI Search optimised content pipeline',
+    themeClass: '',
+    spelling: 'British',
+    dashMode: 'en',                 // em dash -> en dash
+    authors: AUTHOR_DATA,
+    defaultAuthorKey: 'sam',
+    briefDesc: "Provide the page details and Paddle Creative will take it from here.",
+    briefFields: [],                // no extra brief fields beyond the shared ones
+    linkPlaceholder: "https://paddlecreative.co.uk/services/brand-strategy\tThis page covers our brand strategy services for B2B companies\nhttps://paddlecreative.co.uk/work\tOur portfolio of Webflow projects and case studies\nhttps://paddlecreative.co.uk/about\tAbout the Paddle Creative team and our approach",
+    stage2Desc: "Written in Paddle Creative's TOV, structured for AI search extraction.",
+    toneTitle: 'Paddle Creative Tone of Voice Check',
+    toneDesc: 'Reviewed against the Paddle Creative tone of voice — banned language, swap test, positioning, British English, and channel register.',
+    uploadTitle: 'Paddle Creative — Webpage upload template',
+    uploadDesc: "Add content into each field so it can be uploaded to Paddle Creative's website with ease.",
+    inclusions: [
+      'TL;DR at the top (max 5 bullet points)',
+      'Primary term definition',
+      'Quick Answer section',
+      'Quick Steps summary (if applicable)',
+      'Numbered step-by-step structure',
+      'At least 2 Paddle Creative Insights',
+      'Key Takeaways section',
+      'Key Concepts section',
+      'FAQs section at the bottom',
+      'Numbered, conversational H1/H2/H3 headings'
+    ]
+  },
+
+  terpene: {
+    id: 'terpene',
+    name: 'Terpene Journey',
+    headerTitle: 'Terpene Journey — Blog Builder',
+    headerSubtitle: 'Terpene-first cannabis content, built for search and AI answers',
+    themeClass: 'brand-terpene',
+    logoSvg: TERPENE_LOGO_SVG,
+    spelling: 'American',
+    dashMode: 'comma',              // em/en dash -> comma (TJ never uses dashes)
+    authors: TERPENE_AUTHORS,
+    defaultAuthorKey: 'terpene-journey',
+    briefDesc: "Provide the article details. Terpene Journey will write it terpene-first, in brand voice, built for search and AI answers.",
+    // Extra, optional brief fields rendered into #brand-brief-fields
+    briefFields: [
+      { type: 'select', id: 'inp-tj-effect', label: 'Target effect (optional)',
+        options: ['', 'Stimulate', 'Happy / Motivate', 'Release / Relieve', 'Balance', 'Focus', 'Flow', 'Sedate', 'Calm'],
+        optionLabels: ['Not specified', 'Stimulate (Terpinolene)', 'Happy / Motivate (Limonene)', 'Release / Relieve (Caryophyllene)', 'Balance (Humulene)', 'Focus (Pinene)', 'Flow (Bisabolol)', 'Sedate (Myrcene)', 'Calm (Linalool)'] },
+      { type: 'text', id: 'inp-tj-terpenes', label: 'Lead terpene(s) (optional)', placeholder: 'e.g. Limonene, Myrcene, Caryophyllene' },
+      { type: 'select', id: 'inp-tj-articletype', label: 'Article type (optional)',
+        options: ['', 'Terpene profile', 'Educational guide', 'Comparison', 'How-to', 'Local / North Shore guide', 'Strain review', 'Recipe'],
+        optionLabels: ['General article', 'Terpene profile', 'Educational guide', 'Comparison', 'How-to', 'Local / North Shore guide', 'Strain review', 'Recipe'] },
+      { type: 'checkbox', id: 'inp-tj-local', label: 'Include local Massachusetts / North Shore SEO angle' }
+    ],
+    stage2Desc: "Written in Terpene Journey's voice — terpene-first, sensory and honest, structured for search and AI answers.",
+    toneTitle: 'Terpene Journey Tone of Voice Check',
+    toneDesc: 'Reviewed against the Terpene Journey blog tone of voice — no medical claims, terpene-first framing, hedged effects, American English, no em dashes, and the article blueprint.',
+    uploadTitle: 'Terpene Journey — CMS upload template',
+    uploadDesc: "Add content into each field so it can be uploaded to Terpene Journey's CMS (The Revolution / Posts collection) with ease.",
+    // Category slugs exactly as stored in the CMS "Category" field
+    categories: ['recipes', 'learning', 'reviews', 'cannabis-laws-regulations', 'stories'],
+    // Live Terpene Journey link library, used for soft CTAs and internal links
+    links: {
+      domain: 'https://www.terpenejourney.com',
+      site: 'https://www.terpenejourney.com/',
+      about: 'https://www.terpenejourney.com/about',
+      brands: 'https://www.terpenejourney.com/brands',
+      blog: 'https://www.terpenejourney.com/blog',
+      communities: 'https://www.terpenejourney.com/communities',
+      terpGenie: 'https://www.terpenejourney.com/terp-genie',
+      // Terpene profile pages, keyed by terpene
+      terpenes: {
+        Terpinolene:  'https://www.terpenejourney.com/cannabis-terpene/terpinolene',
+        Limonene:     'https://www.terpenejourney.com/cannabis-terpene/limonene',
+        Caryophyllene:'https://www.terpenejourney.com/cannabis-terpene/caryophyllene',
+        Humulene:     'https://www.terpenejourney.com/cannabis-terpene/humulene',
+        Pinene:       'https://www.terpenejourney.com/cannabis-terpene/pinene',
+        Bisabolol:    'https://www.terpenejourney.com/cannabis-terpene/bisabolol',
+        Myrcene:      'https://www.terpenejourney.com/cannabis-terpene/myrcene',
+        Linalool:     'https://www.terpenejourney.com/cannabis-terpene/linalool'
+      },
+      // Effect/activity "Be" pages
+      activities: {
+        'Be Active':     'https://www.terpenejourney.com/cannabis-activities/be-active',
+        'Be Social':     'https://www.terpenejourney.com/cannabis-activities/be-social',
+        'Be Productive': 'https://www.terpenejourney.com/cannabis-activities/be-productive',
+        'Be Creative':   'https://www.terpenejourney.com/cannabis-activities/be-creative',
+        'Be Sleepy':     'https://www.terpenejourney.com/cannabis-activities/be-sleepy'
+      },
+      // Edible effect categories
+      edibles: {
+        Energizing: 'https://terpenejourney.com/cannabis/energizing-edibles',
+        Balancing:  'https://terpenejourney.com/cannabis/balancing-edibles',
+        Calming:    'https://terpenejourney.com/cannabis/calming-edibles'
+      }
+    },
+    inclusions: [
+      'TL;DR (3–5 bold-lead bullets) at the top',
+      'Quick-answer paragraph after the intro',
+      'Question-based H2/H3 headers',
+      'At least 1 Terpene Journey Insight box',
+      'Vivid, sensory aroma & effect language',
+      'Terpene-first framing (never THC-led)',
+      'Hedged effects, zero medical claims',
+      'Comparison tables / step lists where useful',
+      'FAQs near the bottom (3–5)',
+      'Soft CTA (Terp Genie™, the menu, the team)'
+    ],
+
+    // ----- Stage 2: write -----
+    buildWriteSystem(s) {
+      return `You are an expert cannabis writer and budtender for Terpene Journey, a terpene-first recreational cannabis dispensary in Swampscott, Massachusetts, on the North Shore near Boston. Terpene Journey helps people choose cannabis by its terpene profile and lab data, not by THC percentage or Indica/Sativa labels, using tools like Terp Genie and the Entourage Builder. The brand promise is "Find Your Entourage".
+
+Write educational blog articles that are Expert, Sensory, Approachable and Honest. Think of a great budtender: knowledgeable, easy to talk to, curious about the plant, and honest about what is and is not known.
+
+EVERY article MUST follow this blueprint where it fits, in this order:
+1. H1 title that front-loads the main keyword or the question being answered. Plain and clear, with a hint of personality.
+2. TL;DR: 3 to 5 bullets summarising the whole article. Each bullet opens with a short bold lead-in, then the takeaway.
+3. Quick answer paragraph: immediately after the intro, answer the core question in 2 to 4 sentences. Restate the question naturally, then answer it plainly.
+4. Question-based headers (H2 and H3) written the way people search ("What is...", "How do...", "Which terpenes...", "Do terpenes..."). Answer each header in its first sentence or two, then expand.
+5. At least one "Terpene Journey Insight" callout: a short, italicised expert point of view or shop-floor observation. Label it clearly as "Terpene Journey Insight".
+6. Tables to compare terpenes, effects or product types where useful.
+7. Step-by-step numbered lists for any how-to content.
+8. FAQs: 3 to 5 questions with short, direct answers, near the bottom.
+9. Summary / Key Takeaways: a brief recap.
+10. Internal links and a soft CTA: link to relevant products, terpene pages and effect/activity pages; close with a gentle next step (try Terp Genie, build an Entourage, browse the live menu, or ask the team).
+
+RULES (follow every one):
+- Lead with terpenes and effect, never THC percentage. Treat high THC as an incomplete picture, never the headline.
+- Make aroma and effect vivid and sensory. Help the reader smell and feel it.
+- Explain the science plainly. Define any jargon the moment you use it. Short words over long ones. Never academic.
+- NEVER make medical or health claims. Do not say anything treats, cures, heals, relieves, or is proven to do something. Describe what compounds are "commonly associated with", what "many consumers report", what "some research suggests", and use "may". Where relevant add a line like "Research into terpenes is ongoing, and individual experiences may vary".
+- Write responsibly for adults 21 and over. Never frame cannabis as appealing to minors. Advise against use when driving, operating machinery, or during pregnancy. Encourage "start low and go slow" where dosing is relevant.
+- No AI-sounding language. Never use: delve into, it's worth noting that, in conclusion, this comprehensive guide, furthermore, moreover, unlock, harness the power of, in the world of cannabis.
+- NEVER use em dashes or en dashes. Use a comma for a pause, a colon to introduce, or a full stop for two separate thoughts.
+- American English throughout (flavor, color, energizing, analyze, personalize).
+- Brand vocabulary: Terpene Journey (two words), Terp Genie (a recommendation tool, add a trademark on first use), Entourage Builder, "Find Your Entourage", the entourage effect (lowercase, always framed as a theory), budtender (one word).
+- The eight effects mapped to their lead terpenes: Stimulate = Terpinolene; Happy/Motivate = Limonene; Release/Relieve = Caryophyllene; Balance = Humulene; Focus = Pinene; Flow = Bisabolol; Sedate = Myrcene; Calm = Linalool. Use these effect words consistently.
+- Useful facts to weave in where relevant: Massachusetts lab labels show terpene data (required by the Cannabis Control Commission, the CCC); a total terpene content around 1.5% to 2% or higher signals a flavorful, high-quality product; the dominant terpene is listed first and has the most influence; terpene profiles vary batch to batch, so batch-specific lab data beats strain names; fresh flower and live resin or rosin preserve terpenes best, distillates are the most variable.
+- Never write generic dispensary filler. If a sentence could sit on any dispensary's blog unchanged, rewrite it with a specific terpene-first point of view.
+
+Format all headings as markdown (# H1, ## H2, ### H3). Do NOT number the headings. Keep paragraphs short, 2 to 4 sentences.`;
+    },
+
+    // Build a relevant internal-link reference for the writer, prioritising the
+    // terpene/activity pages tied to the chosen effect and lead terpenes.
+    linkLibraryText(s) {
+      const L = this.links;
+      const lines = [];
+      // Lead terpene pages, from the effect and any free-typed terpenes
+      const terps = new Set();
+      if (s.tjEffect && TJ_EFFECT_TERPENE[s.tjEffect]) terps.add(TJ_EFFECT_TERPENE[s.tjEffect]);
+      (s.tjTerpenes || '').split(/[,/]+/).map(t => t.trim()).forEach(t => {
+        const key = Object.keys(L.terpenes).find(k => k.toLowerCase() === t.toLowerCase());
+        if (key) terps.add(key);
+      });
+      terps.forEach(t => lines.push(`- ${t} terpene profile: ${L.terpenes[t]}`));
+      // Always offer the full set so the model can pick what fits
+      Object.keys(L.terpenes).forEach(t => { if (!terps.has(t)) lines.push(`- ${t} terpene profile: ${L.terpenes[t]}`); });
+      Object.entries(L.activities).forEach(([k, v]) => lines.push(`- ${k} activity page: ${v}`));
+      Object.entries(L.edibles).forEach(([k, v]) => lines.push(`- ${k} edibles: ${v}`));
+      lines.push(`- Terp Genie, the terpene recommendation tool: ${L.terpGenie}`);
+      lines.push(`- Terpene Journey home: ${L.site}`);
+      lines.push(`- About Terpene Journey: ${L.about}`);
+      lines.push(`- Brands we carry: ${L.brands}`);
+      lines.push(`- The blog: ${L.blog}`);
+      lines.push(`- Communities: ${L.communities}`);
+      lines.push(`- The Entourage Builder is a tool available across the Terpene Journey site (no single page URL). Refer to it by name where relevant and link it to Terp Genie ${L.terpGenie} or the home page ${L.site}.`);
+      return lines.join('\n');
+    },
+
+    buildWriteUser(s) {
+      const L = this.links;
+      const effect = s.tjEffect ? `${s.tjEffect} (lead terpene: ${TJ_EFFECT_TERPENE[s.tjEffect] || ''})` : '';
+      const localLine = s.tjLocal
+        ? 'Include the local Massachusetts / North Shore angle for local SEO (Swampscott, Lynn, Salem, Marblehead, the North Shore, the CCC) where it fits naturally.'
+        : 'A heavy local angle is optional for this article; only include Massachusetts / North Shore references if they fit naturally.';
+      const parts = [
+        `Write a ${s.words}-word educational blog article for Terpene Journey.`,
+        ``,
+        `Title: ${s.title}`,
+        `Overview: ${s.overview}`,
+        `Target audience: ${s.audience || 'Massachusetts cannabis shoppers on the North Shore, from curious first-timers to experienced users'}`,
+        `Primary keyword / question: ${s.keyword || 'not specified'}`,
+        s.tjArticleType ? `Article type: ${s.tjArticleType}` : '',
+        effect ? `Target effect to focus on: ${effect}` : '',
+        s.tjTerpenes ? `Lead terpene(s) to centre the article on: ${s.tjTerpenes}` : '',
+        localLine,
+        s.extra ? `Additional requirements: ${s.extra}` : '',
+        ``,
+        `INTERNAL LINKS: Weave 3 to 6 of these real Terpene Journey pages into the body as natural markdown links, choosing the ones most relevant to the topic. Do not invent URLs, only use these:`,
+        this.linkLibraryText(s),
+        ``,
+        `SOFT CTA: After the introduction or first section, weave in a gentle mid-article call to action pointing to the single most relevant page above (for example the matching terpene profile or "Be" activity page). Use a natural markdown link. Close the article with a second soft CTA in the same spirit, inviting the reader to explore Terpene Journey, build their entourage, or visit the team. Helpful, never pushy, never salesy.`,
+        ``,
+        s.author && s.author.bio
+          ? `AUTHOR SECTION: Before the FAQs section, include an ## About the Author section with this exact content, do not rewrite it:\n**${s.author.name}**, *${s.author.role} at Terpene Journey*\n${s.author.bio}`
+          : `BYLINE: Attribute the article to ${s.author ? s.author.name : 'the Terpene Journey team'}. Do not invent an author bio.`,
+        ``,
+        `Write it now, no preamble.`
+      ];
+      return parts.filter(x => x !== '').join('\n');
+    },
+
+    // ----- Stage 3: internal links -----
+    linkPlaceholder: 'https://www.terpenejourney.com/cannabis-terpene/myrcene\tMyrcene terpene profile (calm, sedate)\nhttps://www.terpenejourney.com/cannabis-activities/be-sleepy\tBe Sleepy activity page\nhttps://terpenejourney.com/cannabis/calming-edibles\tCalming edibles category\nhttps://www.terpenejourney.com/about\tAbout Terpene Journey',
+    linkSys1: 'You are an SEO strategist for Terpene Journey, a terpene-first cannabis dispensary. Identify natural internal linking opportunities. Return valid JSON only, no markdown, no explanation.',
+    linkSys2: 'You are a content editor at Terpene Journey. Apply internal links naturally. Return only the updated markdown blog post, no preamble.',
+
+    // ----- Stage 4: AEO/AEO template + tone checker -----
+    aeoTemplate: [
+      'TERPENE JOURNEY BLOG / SEO + AEO CHECKLIST',
+      '',
+      'The article should follow the Terpene Journey blueprint and pass these checks.',
+      '',
+      '1. Terpene-first: leads with terpenes and effect, not THC percentage.',
+      '2. TL;DR present: 3 to 5 bullets with bold lead-ins near the top.',
+      '3. Quick-answer paragraph: 2 to 4 sentences directly answering the core question, right after the intro.',
+      '4. Question-based headers: H2/H3 written as real search questions, each answered in the first sentence or two.',
+      '5. Terpene Journey Insight: at least one italicised expert callout showing real shop-floor expertise.',
+      '6. Tables and/or step lists where they help comparison or how-to.',
+      '7. FAQs: 3 to 5 natural questions with short, direct answers near the bottom (FAQ schema friendly).',
+      '8. Key Takeaways / summary at the end.',
+      '9. Hedged effect language: every effect claim uses "commonly associated with", "many report", "may", or "often chosen for"; zero medical or health claims; an "individual experiences may vary" style line where relevant.',
+      '10. Responsible: written for adults 21+, no appeal to minors, no unsafe-use encouragement.',
+      '11. Local SEO where natural: Massachusetts, the CCC, Swampscott, the North Shore.',
+      '12. Internal links and a soft CTA (Terp Genie, the Entourage Builder, the live menu, or asking the team).',
+      '13. Sensory: vivid aroma and effect language throughout.',
+      '14. Clean: American English, no em dashes, no AI-sounding phrases, no generic dispensary filler.',
+      '15. Metadata: keyword-led title and a tight meta description (around 150 to 160 characters).'
+    ].join('\n'),
+    toneChannelName: 'Blog / article',
+    toneIssueTypes: 'MEDICAL_CLAIM, THC_LEAD, UNHEDGED_EFFECT, EM_DASH, BRITISH_SPELLING, AI_PHRASE, MISSING_TLDR, MISSING_QUICK_ANSWER, STATEMENT_HEADER, MISSING_INSIGHT_BOX, FEAR_SELLING, UNDER21, GENERIC_FILLER, MISSING_INTERNAL_LINK, MISSING_CTA',
+    toneSystem: `You are the Terpene Journey blog tone-of-voice checker. Review copy against the Terpene Journey blog and SEO tone of voice and return a structured verdict.
+
+Who Terpene Journey is:
+A terpene-first recreational cannabis dispensary in Swampscott, Massachusetts (North Shore, near Boston). The big idea: choose cannabis by its terpenes and lab data, not THC percentage or Indica/Sativa labels. Voice is Expert, Sensory, Approachable and Honest. Tagline: "Find Your Entourage".
+
+Pass/Fail criteria, flag any of these as a FAIL:
+- Any medical or health claim (treats, cures, relieves, heals, proven to, fixes). This is the most important rule and a compliance issue.
+- Leading with or over-emphasising THC percentage instead of terpenes.
+- Effect claims with no hedging (missing "commonly associated with", "many report", "may", "often chosen for").
+- No TL;DR, or no quick-answer paragraph, or statement-style headers instead of questions.
+- No Terpene Journey Insight box.
+- Em dashes anywhere (or en dashes used as dashes). Use commas, colons, or full stops.
+- AI-sounding phrases (delve into, in conclusion, it's worth noting that, this comprehensive guide, furthermore, moreover, unlock, harness the power of, in the world of cannabis).
+- British spellings (flavour, colour, energise, analyse, optimise) when American English is the standard.
+- Fear-based or urgency selling, or content that could appeal to under-21s.
+- Generic filler that could appear unchanged on any dispensary blog.
+- Missing internal links or missing a soft CTA.
+
+Positive signals, note these in whats_working:
+- Terpene-first framing with vivid, sensory aroma and effect language.
+- TL;DR bullets, a quick-answer paragraph, and question-based headers.
+- At least one Terpene Journey Insight box showing real expertise.
+- Properly hedged effect language and an "individual experiences may vary" style line.
+- Tables, step lists, and an FAQ block where useful.
+- Massachusetts / CCC / North Shore local references where natural.
+- Relevant internal links and a gentle Terp Genie or menu CTA.
+- American English throughout, no em dashes.
+
+Channel for blog/article: educational, human, sensory. No academic tone, never salesy.
+
+Return valid JSON only, no markdown, no explanation outside the JSON.`,
+
+    // ----- Stage 6: CMS upload template -----
+    buildExtractPrompt(content) {
+      const cats = this.categories.join(', ');
+      return `Extract all fields for the Terpene Journey CMS upload template (The Revolution / Posts collection) from this blog post.
+
+BLOG POST:
+${content}
+
+TODAY'S DATE: ${new Date().toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}
+
+Return JSON:
+{
+  "name": "the full blog post title",
+  "slug": "short-url-slug (keep short if title is long)",
+  "h1_title": "the H1 title (usually same as name)",
+  "tldr": ["3 to 5 short summary bullets, terpene-first, no medical claims, each one concise sentence"],
+  "date": "today's date as Month D, YYYY",
+  "short_intro_text": "the article's opening intro paragraph in plain prose (no markdown)",
+  "content_part1": "the full blog content BEFORE the mid-article soft CTA (markdown)",
+  "content_part2": "the full blog content AFTER the mid-article soft CTA through to the end (markdown)",
+  "featured": false,
+  "category": ["choose 1-3 slugs from: ${cats}"],
+  "recipe_product": "only if this is a recipe article, name the product, otherwise empty string",
+  "see_more_exclude": false,
+  "faqs": [{"question": "...", "answer": "..."}]
+}
+
+For tldr: 3 to 5 short bullets that lead with the terpene/effect angle, never a medical claim.
+For category: pick the most relevant 1-3 slugs from the allowed list only, returned exactly as written (lowercase slugs like "learning" or "recipes").
+For content_part1 and content_part2: split the content at the mid-article soft CTA. Do not include the CTA block itself in either part.
+For faqs: extract the FAQ questions and answers from the post.`;
+    },
+    buildUploadFields(meta, s) {
+      const faqsText = (meta.faqs || []).map(f => `Q: ${f.question}\nA: ${f.answer}`).join('\n\n');
+      // CMS stores TL:DR as HTML <li> bullets
+      const tldrArr = Array.isArray(meta.tldr) ? meta.tldr : (meta.tldr ? [meta.tldr] : []);
+      const tldrHtml = tldrArr.map(b => `<li>${b}</li>`).join('');
+      const author = s.author || {};
+      return [
+        { label: 'Name', value: meta.name },
+        { label: 'Slug', value: meta.slug, note: 'Keep short if blog name is long' },
+        { label: 'H1 Title', value: meta.h1_title || meta.name },
+        { label: 'TL:DR', value: tldrHtml, note: 'CMS stores HTML <li> bullets' },
+        { label: 'Written By', value: author.slug || '', note: 'CMS author reference (slug)' },
+        { label: 'Author Bio', value: author.bio || '', note: 'Usually managed in the CMS author record' },
+        { label: 'Date', value: meta.date, note: 'e.g. Month D, YYYY' },
+        { label: 'Main Photo', value: '— Upload manually', note: 'Image upload required in the CMS' },
+        { label: 'Short Intro Text', value: meta.short_intro_text },
+        { label: 'Text Block 1', value: meta.content_part1, large: true, note: 'Body before the mid-article CTA' },
+        { label: 'Text Block 2', value: meta.content_part2, large: true, note: 'Body after the mid-article CTA' },
+        { label: 'Featured?', value: meta.featured === true || meta.featured === 'true' ? 'true' : 'false' },
+        { label: 'Category', value: (meta.category || []).join('; '), note: this.categories.join(', ') },
+        { label: 'Recipe Product', value: meta.recipe_product || '', note: 'Recipe articles only' },
+        { label: "Don't Include In \"See More\" List", value: meta.see_more_exclude === true || meta.see_more_exclude === 'true' ? 'true' : 'false' },
+        { label: 'FAQs', value: faqsText }
+      ];
+    }
+  }
+};
+
+let currentBrand = null;
+function getBrand() { return BRANDS[state.brand] || BRANDS.paddle; }
+
+// Normalise dashes per the active brand's rule
+function normalizeDashes(text) {
+  if (!text) return text;
+  const mode = getBrand().dashMode;
+  if (mode === 'comma') return text.replace(/\s*[—–]\s*/g, ', ');
+  return text.replace(/—/g, '–'); // default: em -> en
+}
+
 
 
 // ── Session save / load ──────────────────────────────────────────────────────
@@ -642,6 +1050,11 @@ async function loadSnapshot() {
 function restoreState(saved) {
   Object.assign(state, saved);
 
+  // Apply the saved brand first so the form/labels/fields match the brand
+  applyBrand(state.brand || 'paddle');
+  const brandSel = document.getElementById('inp-brand');
+  if (brandSel && state.brand) brandSel.value = state.brand;
+
   // Stage 1 form fields
   const set = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.value = v; };
   set('inp-title',    state.title);
@@ -652,6 +1065,12 @@ function restoreState(saved) {
   set('inp-keyword',  state.keyword);
   set('inp-author',   state.authorKey);
   set('inp-extra',    state.extra);
+  // Terpene Journey optional fields
+  set('inp-tj-effect',      state.tjEffect);
+  set('inp-tj-terpenes',    state.tjTerpenes);
+  set('inp-tj-articletype', state.tjArticleType);
+  const _tjLocalEl = document.getElementById('inp-tj-local');
+  if (_tjLocalEl && state.tjLocal !== undefined) _tjLocalEl.checked = !!state.tjLocal;
 
   let lastStage = 1;
 
@@ -792,10 +1211,102 @@ function renderUploadUI() {
   if (state.htmlPart2)   document.getElementById('out-html-part2').textContent = state.htmlPart2;
 }
 
+// ── Brand selection ──────────────────────────────────────────────────────────
+
+// Captured at load so we can restore Paddle's logo when switching back
+let PADDLE_LOGO_HTML = '';
+
+function selectBrand() {
+  const sel = document.getElementById('inp-brand');
+  const brandId = sel ? sel.value : 'paddle';
+  state.brand = brandId;
+  applyBrand(brandId);
+  goStage(1);
+}
+
+function applyBrand(brandId) {
+  const brand = BRANDS[brandId] || BRANDS.paddle;
+  currentBrand = brand;
+  state.brand = brand.id;
+
+  // Theme
+  document.body.classList.remove('brand-terpene');
+  if (brand.themeClass) document.body.classList.add(brand.themeClass);
+
+  // Header text + logo
+  const t = document.getElementById('brand-title');
+  const sub = document.getElementById('brand-subtitle');
+  if (t) t.textContent = brand.headerTitle;
+  if (sub) sub.textContent = brand.headerSubtitle;
+  document.title = brand.headerTitle;
+  const logo = document.getElementById('header-logo');
+  if (logo) logo.innerHTML = brand.logoSvg ? brand.logoSvg : PADDLE_LOGO_HTML;
+
+  // Reveal the pipeline
+  const nav = document.getElementById('stage-nav');
+  if (nav) nav.style.display = '';
+  const prog = document.getElementById('progress-bar-wrap');
+  if (prog) prog.style.display = '';
+
+  // Stage 1 brief description
+  const bd = document.getElementById('brief-desc');
+  if (bd) bd.textContent = brand.briefDesc;
+
+  // Author dropdown
+  const authorSel = document.getElementById('inp-author');
+  if (authorSel) {
+    authorSel.innerHTML = Object.keys(brand.authors).map(k =>
+      `<option value="${k}">${brand.authors[k].name}</option>`).join('');
+    authorSel.value = state.authorKey && brand.authors[state.authorKey] ? state.authorKey : brand.defaultAuthorKey;
+  }
+
+  // Brand-specific brief fields
+  const fieldsWrap = document.getElementById('brand-brief-fields');
+  if (fieldsWrap) {
+    fieldsWrap.innerHTML = (brand.briefFields || []).map(f => {
+      if (f.type === 'select') {
+        const opts = f.options.map((o,i) => `<option value="${o}">${(f.optionLabels && f.optionLabels[i]) || o}</option>`).join('');
+        return `<div class="form-row"><label>${f.label}</label><select id="${f.id}">${opts}</select></div>`;
+      }
+      if (f.type === 'checkbox') {
+        return `<div class="form-row" style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="${f.id}" style="width:16px;height:16px"><label style="margin:0">${f.label}</label></div>`;
+      }
+      return `<div class="form-row"><label>${f.label}</label><input type="text" id="${f.id}" placeholder="${f.placeholder||''}"></div>`;
+    }).join('');
+  }
+
+  // Stage 3 internal-links placeholder hint
+  const linksTa = document.getElementById('inp-extra-links');
+  if (linksTa && brand.linkPlaceholder) linksTa.setAttribute('placeholder', brand.linkPlaceholder);
+
+  // Stage 2 inclusions box + descriptions
+  const inc = document.getElementById('stage2-inclusions');
+  if (inc) {
+    inc.innerHTML = (brand.inclusions || []).map(item =>
+      `<div style="font-size:12px;color:var(--text);display:flex;gap:6px;align-items:flex-start"><span>◆</span><span>${item}</span></div>`).join('');
+  }
+  const s2d = document.getElementById('stage2-desc');
+  if (s2d) s2d.textContent = brand.stage2Desc;
+
+  // Stage 4 tone-check labels
+  const tct = document.getElementById('tone-check-title');
+  if (tct) tct.textContent = brand.toneTitle;
+  const tcd = document.getElementById('tone-check-desc');
+  if (tcd) tcd.textContent = brand.toneDesc;
+
+  // Stage 6 upload labels
+  const utt = document.getElementById('upload-template-title');
+  if (utt) utt.textContent = brand.uploadTitle;
+  const utd = document.getElementById('upload-template-desc');
+  if (utd) utd.textContent = brand.uploadDesc;
+}
+
 // ── Navigation ───────────────────────────────────────────────────────────────
 
 function goStage(n) {
-  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===n-1));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('stage'+n);
+  if (panel) panel.classList.add('active');
   document.querySelectorAll('.stage-btn').forEach((b,i) => b.classList.toggle('active', i===n-1));
   document.getElementById('progress').style.width = (n/6*100)+'%';
   window.scrollTo(0,0);
@@ -829,8 +1340,16 @@ async function runStage2() {
   state.audience = document.getElementById('inp-audience').value;
   state.keyword = document.getElementById('inp-keyword').value;
   state.authorKey = document.getElementById('inp-author').value;
-  state.author = AUTHOR_DATA[state.authorKey] || AUTHOR_DATA.sam;
+  const _brand = getBrand();
+  state.author = _brand.authors[state.authorKey] || _brand.authors[_brand.defaultAuthorKey];
   state.extra = document.getElementById('inp-extra').value;
+
+  // Terpene Journey optional brief fields
+  const _g = id => { const el = document.getElementById(id); return el ? (el.type === 'checkbox' ? el.checked : el.value) : ''; };
+  state.tjEffect = _g('inp-tj-effect');
+  state.tjTerpenes = _g('inp-tj-terpenes');
+  state.tjArticleType = _g('inp-tj-articletype');
+  state.tjLocal = _g('inp-tj-local');
 
   goStage(2);
   showSpinner('spin1', true);
@@ -838,6 +1357,12 @@ async function runStage2() {
   document.getElementById('btn-stage3').disabled = true;
 
   try {
+    const brand = getBrand();
+    let sys, prompt;
+    if (brand.id === 'terpene') {
+      sys = brand.buildWriteSystem(state);
+      prompt = brand.buildWriteUser(state);
+    } else {
     const PADDLE_TOV = [
       'PADDLE CREATIVE TONE OF VOICE:',
       'Brand personality: Provocatively Playful.',
@@ -886,7 +1411,7 @@ async function runStage2() {
       '- AI is in every Paddler\'s armoury — it is how we work, not what we sell. We are not an "AI agency".'
     ].join('\n');
     const tovBlock = '\n\n' + PADDLE_TOV;
-    const sys = `You are a senior content strategist at Paddle Creative, a bold and ambitious brand and creative agency. Your writing is clear, confident and never corporate — it sounds like a smart human, not a bot. You specialise in AEO (Answer Engine Optimisation) and GEO (Generative Engine Optimisation) — writing content that AI systems like ChatGPT, Perplexity and Google AI Overviews can easily extract, quote and recommend.
+    sys = `You are a senior content strategist at Paddle Creative, a bold and ambitious brand and creative agency. Your writing is clear, confident and never corporate — it sounds like a smart human, not a bot. You specialise in AEO (Answer Engine Optimisation) and GEO (Generative Engine Optimisation) — writing content that AI systems like ChatGPT, Perplexity and Google AI Overviews can easily extract, quote and recommend.
 
 EVERY blog post you write MUST include ALL of the following sections in this order:
 1. TL;DR — formatted as bullet points only (no prose), maximum 5 bullets, each bullet one concise sentence. Place at the very top immediately after the H1.
@@ -901,7 +1426,7 @@ EVERY blog post you write MUST include ALL of the following sections in this ord
 10. CTA block — as specified
 
 Headings must be formatted as H1/H2/H3 in markdown. ALL H2 and H3 headings must be numbered (e.g. "1. Why Brand Strategy Matters", "2. How to Build a Brand Strategy", "2.1 Define Your Audience"). Use conversational, descriptive headings — natural and answer-oriented for AEO. Keep paragraphs to 3-4 sentences max.${tovBlock}`;
-    const prompt = `Write a ${state.words}-word ${state.type} for Paddle Creative's website.
+    prompt = `Write a ${state.words}-word ${state.type} for Paddle Creative's website.
 
 Title: ${state.title}
 Overview: ${state.overview}
@@ -925,7 +1450,8 @@ ${state.author.bio}
 
 Write it now — no preamble.`;
 
-    state.content = (await callClaude(sys, prompt)).replace(/—/g, '–');
+    }
+    state.content = normalizeDashes(await callClaude(sys, prompt));
     document.getElementById('out-content').textContent = state.content;
     document.getElementById('btn-stage3').disabled = false;
     saveSnapshot();
@@ -957,7 +1483,8 @@ async function runStage3() {
     : '(no internal links provided — add URLs in the box above)';
 
   try {
-    const sys1 = `You are an SEO strategist for Paddle Creative. Identify natural internal linking opportunities. Return valid JSON only — no markdown, no explanation.`;
+    const brand = getBrand();
+    const sys1 = brand.linkSys1 || `You are an SEO strategist for Paddle Creative. Identify natural internal linking opportunities. Return valid JSON only — no markdown, no explanation.`;
     const prompt1 = `Given this blog post and these internal pages, identify 3-5 natural internal linking opportunities.
 
 BLOG POST:
@@ -987,7 +1514,7 @@ Use the page descriptions to find genuinely relevant linking opportunities — n
         </div>`).join('');
     }
 
-    const sys2 = `You are a content editor at Paddle Creative. Apply internal links naturally. Return only the updated markdown blog post — no preamble.`;
+    const sys2 = brand.linkSys2 || `You are a content editor at Paddle Creative. Apply internal links naturally. Return only the updated markdown blog post — no preamble.`;
     const prompt2 = `Insert these internal links naturally into the blog post as [anchor text](url). Do not change any other content.
 
 BLOG POST:
@@ -1008,7 +1535,7 @@ ${JSON.stringify(state.linkOpps)}`;
 }
 
 async function runStage4Score() {
-  const template = [
+  const _paddleTemplate = [
       'LLM / AEO / GEO NEW WEBPAGE TEMPLATE - PADDLE CREATIVE',
       '',
       'Step 1: Define target prompts and user questions',
@@ -1090,6 +1617,8 @@ async function runStage4Score() {
       '- Metadata written for conversational clarity'
     ].join('\n');
   if (!state.linkedContent) { alert('Please complete stages 1–3 first.'); return; }
+  const brand = getBrand();
+  const template = brand.aeoTemplate || _paddleTemplate;
   state.aeoTemplate = template;
 
   showSpinner('spin4', true);
@@ -1148,7 +1677,7 @@ Include 4-6 additional recommendations and 3-5 quick wins.`;
     state.scores = { ...scores, ...claudeChecks };
 
     // Tone check — Paddle Creative brand voice
-    const TONE_CHECKER_SYSTEM = `You are the Paddle Creative tone-of-voice checker. Review copy against the Paddle Creative tone of voice and return a structured verdict.
+    const TONE_CHECKER_SYSTEM = brand.toneSystem || `You are the Paddle Creative tone-of-voice checker. Review copy against the Paddle Creative tone of voice and return a structured verdict.
 
 Who Paddle Creative Is:
 Paddle Creative is a specialist marketing team — Paddlers — who embed into B2B scale-up marketing teams. Not a traditional agency. Not a talent marketplace. A focused crew with a point of view.
@@ -1195,7 +1724,7 @@ Channel for blog/article: Informative but human. No academic tone.
 
 Return valid JSON only — no markdown, no explanation outside the JSON.`;
 
-    const toneUserPrompt = `Run a Paddle Creative tone check on this blog post. Channel: Blog / article.
+    const toneUserPrompt = `Run a ${brand.name} tone check on this blog post. Channel: ${brand.toneChannelName || 'Blog / article'}.
 
 BLOG POST:
 ${state.linkedContent}
@@ -1211,7 +1740,7 @@ Return valid JSON only — no markdown, no text outside the JSON. Use exactly th
   ],
   "whats_working": ["specific observation 1", "specific observation 2", "specific observation 3"]
 }
-Rules: verdict must be "PASS", "FAIL", or "PASS WITH NOTES". If PASS, return empty arrays for issues and rewrites. Always include 2-4 whats_working items. Issue types: EM_DASH, AMERICAN_SPELLING, JARGON, SWAP_TEST, POSITIONING, CORPORATE_FILLER, SENTENCE_LENGTH, CROWD_ADDRESS, ROBOTIC_CONNECTOR, FEAR_SELLING, WEBOPS_TERM.`;
+Rules: verdict must be "PASS", "FAIL", or "PASS WITH NOTES". If PASS, return empty arrays for issues and rewrites. Always include 2-4 whats_working items. Issue types: ${brand.toneIssueTypes || 'EM_DASH, AMERICAN_SPELLING, JARGON, SWAP_TEST, POSITIONING, CORPORATE_FILLER, SENTENCE_LENGTH, CROWD_ADDRESS, ROBOTIC_CONNECTOR, FEAR_SELLING, WEBOPS_TERM'}.`;
 
     const rawTone = await callClaude(TONE_CHECKER_SYSTEM, toneUserPrompt);
     let toneCheck;
@@ -1303,8 +1832,13 @@ async function runStage6() {
 
   try {
     // ── Call 1: Extract all Paddle Creative upload template fields ──
-    const sys1 = `You are a content manager at Paddle Creative. Extract all fields needed for the Paddle Creative webpage upload template. Return valid JSON only — no markdown, no explanation.`;
-    const prompt1 = `Extract all fields for the Paddle Creative webpage upload template from this blog post.
+    const brand = getBrand();
+    const sys1 = brand.id === 'terpene'
+      ? `You are a content manager at Terpene Journey. Extract all CMS fields for the Terpene Journey Posts collection. Return valid JSON only, no markdown, no explanation.`
+      : `You are a content manager at Paddle Creative. Extract all fields needed for the Paddle Creative webpage upload template. Return valid JSON only — no markdown, no explanation.`;
+    const prompt1 = brand.id === 'terpene'
+      ? brand.buildExtractPrompt(contentToUpload)
+      : `Extract all fields for the Paddle Creative webpage upload template from this blog post.
 
 BLOG POST:
 ${contentToUpload}
@@ -1345,7 +1879,7 @@ For faqs: extract the FAQ questions and answers from the post.`;
     const tldrBullets = (meta.tldr||[]).map(b => `• ${b}`).join('\n');
     const faqsText = (meta.faqs||[]).map(f => `Q: ${f.question}\nA: ${f.answer}`).join('\n\n');
 
-    const templateFields = [
+    const templateFields = brand.id === 'terpene' ? brand.buildUploadFields(meta, state) : [
       { label: 'Name', value: meta.name },
       { label: 'Slug', value: meta.slug, note: 'Keep short if blog name is long' },
       { label: 'Main image', value: '— Upload manually', note: 'Image upload required in Webflow' },
@@ -1442,7 +1976,7 @@ async function runRefineAgain() {
   }
 
   try {
-    const sys = `You are a senior content editor at Paddle Creative. Refine this already-improved blog post further based on the recommendations provided. Keep all existing improvements, CTAs, and internal links intact. Return only the full improved blog post in markdown — no preamble.`;
+    const sys = `You are a senior content editor at ${getBrand().name}. Refine this already-improved blog post further based on the recommendations provided. Keep all existing improvements, CTAs, and internal links intact. Return only the full improved blog post in markdown — no preamble.`;
     const prompt = `Further refine this blog post based on these additional recommendations:
 
 BLOG POST:
@@ -1453,7 +1987,7 @@ ${checkedRecs.map((r,i) => `${i+1}. ${r}`).join('\n')}
 
 Return the full further-refined blog post now.`;
 
-    const refined2 = (await callClaude(sys, prompt)).replace(/—/g, '–');
+    const refined2 = normalizeDashes(await callClaude(sys, prompt));
     state.refinedContent = refined2;
 
     // Update the refined content output box
@@ -1535,7 +2069,7 @@ async function runStage5Refine() {
   const skippedCount = document.querySelectorAll('.rec-checkbox:not(:checked)').length;
 
   try {
-    const sys = `You are a senior content editor at Paddle Creative. You are given a blog post and a list of improvement recommendations from an AEO/GEO review. Your job is to rewrite and improve the blog post to address every recommendation, while keeping the core content, structure, TOV, and CTA intact. Return only the improved blog post in markdown — no preamble or explanation.`;
+    const sys = `You are a senior content editor at ${getBrand().name}. You are given a blog post and a list of improvement recommendations from an AEO/GEO review. Your job is to rewrite and improve the blog post to address every recommendation, while keeping the core content, structure, TOV, and CTA intact. Return only the improved blog post in markdown — no preamble or explanation.`;
     const prompt = `Improve this blog post based on the review recommendations below. Address every recommendation where possible without changing the core message, CTA, or internal links.
 
 BLOG POST:
@@ -1546,7 +2080,7 @@ ${allRecs.length ? allRecs.map((r,i) => `${i+1}. ${r}`).join('\n') : 'General im
 
 Return the full improved blog post now.`;
 
-    state.refinedContent = (await callClaude(sys, prompt)).replace(/—/g, '–');
+    state.refinedContent = normalizeDashes(await callClaude(sys, prompt));
     document.getElementById('out-refined').textContent = state.refinedContent;
 
     const sys2 = `You are a content reviewer. Compare an original and refined blog post and write a brief plain-text summary of the key improvements made. Be specific and concise — bullet points, 5-8 items. No preamble.`;
@@ -1664,6 +2198,7 @@ function copyText(id) {
 
 function startOver() {
   state = {};
+  currentBrand = null;
   document.getElementById('progress').style.width = '20%';
   document.getElementById('review-results').classList.add('hidden');
   document.getElementById('refine-results') && document.getElementById('refine-results').classList.add('hidden');
@@ -1676,10 +2211,22 @@ function startOver() {
   if (sb) sb.classList.add('hidden');
   const bar = document.getElementById('share-bar');
   if (bar) bar.classList.add('hidden');
-  goStage(1);
+  // Back to brand selection
+  document.body.classList.remove('brand-terpene');
+  const navEl = document.getElementById('stage-nav'); if (navEl) navEl.style.display = 'none';
+  const progEl = document.getElementById('progress-bar-wrap'); if (progEl) progEl.style.display = 'none';
+  const bt = document.getElementById('brand-title'); if (bt) bt.textContent = 'Blog Builder';
+  const bs = document.getElementById('brand-subtitle'); if (bs) bs.textContent = 'Select a brand to begin';
+  const lg = document.getElementById('header-logo'); if (lg && PADDLE_LOGO_HTML) lg.innerHTML = PADDLE_LOGO_HTML;
+  document.title = 'Blog Builder';
+  goStage(0);
 }
 
-document.addEventListener('DOMContentLoaded', loadSnapshot);
+document.addEventListener('DOMContentLoaded', () => {
+  const lg = document.getElementById('header-logo');
+  if (lg) PADDLE_LOGO_HTML = lg.innerHTML;
+  loadSnapshot();
+});
 
 </script>
 </body>
