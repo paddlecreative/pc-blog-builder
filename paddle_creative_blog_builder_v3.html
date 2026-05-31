@@ -721,12 +721,39 @@ const BRANDS = {
     uploadDesc: "Add content into each field so it can be uploaded to Terpene Journey's CMS (The Revolution / Posts collection) with ease.",
     // Category slugs exactly as stored in the CMS "Category" field
     categories: ['recipes', 'learning', 'reviews', 'cannabis-laws-regulations', 'stories'],
-    // Soft CTA link destinations — placeholders until the live URLs are supplied
+    // Live Terpene Journey link library, used for soft CTAs and internal links
     links: {
-      domain: 'https://terpenejourney.com',
-      terpGenie: 'https://terpenejourney.com/terp-genie',
-      entourage: 'https://terpenejourney.com/entourage-builder',
-      menu: 'https://terpenejourney.com/menu'
+      domain: 'https://www.terpenejourney.com',
+      site: 'https://www.terpenejourney.com/',
+      about: 'https://www.terpenejourney.com/about',
+      brands: 'https://www.terpenejourney.com/brands',
+      blog: 'https://www.terpenejourney.com/blog',
+      communities: 'https://www.terpenejourney.com/communities',
+      // Terpene profile pages, keyed by terpene
+      terpenes: {
+        Terpinolene:  'https://www.terpenejourney.com/cannabis-terpene/terpinolene',
+        Limonene:     'https://www.terpenejourney.com/cannabis-terpene/limonene',
+        Caryophyllene:'https://www.terpenejourney.com/cannabis-terpene/caryophyllene',
+        Humulene:     'https://www.terpenejourney.com/cannabis-terpene/humulene',
+        Pinene:       'https://www.terpenejourney.com/cannabis-terpene/pinene',
+        Bisabolol:    'https://www.terpenejourney.com/cannabis-terpene/bisabolol',
+        Myrcene:      'https://www.terpenejourney.com/cannabis-terpene/myrcene',
+        Linalool:     'https://www.terpenejourney.com/cannabis-terpene/linalool'
+      },
+      // Effect/activity "Be" pages
+      activities: {
+        'Be Active':     'https://www.terpenejourney.com/cannabis-activities/be-active',
+        'Be Social':     'https://www.terpenejourney.com/cannabis-activities/be-social',
+        'Be Productive': 'https://www.terpenejourney.com/cannabis-activities/be-productive',
+        'Be Creative':   'https://www.terpenejourney.com/cannabis-activities/be-creative',
+        'Be Sleepy':     'https://www.terpenejourney.com/cannabis-activities/be-sleepy'
+      },
+      // Edible effect categories
+      edibles: {
+        Energizing: 'https://terpenejourney.com/cannabis/energizing-edibles',
+        Balancing:  'https://terpenejourney.com/cannabis/balancing-edibles',
+        Calming:    'https://terpenejourney.com/cannabis/calming-edibles'
+      }
     },
     inclusions: [
       'TL;DR (3–5 bold-lead bullets) at the top',
@@ -776,6 +803,31 @@ RULES (follow every one):
 Format all headings as markdown (# H1, ## H2, ### H3). Do NOT number the headings. Keep paragraphs short, 2 to 4 sentences.`;
     },
 
+    // Build a relevant internal-link reference for the writer, prioritising the
+    // terpene/activity pages tied to the chosen effect and lead terpenes.
+    linkLibraryText(s) {
+      const L = this.links;
+      const lines = [];
+      // Lead terpene pages, from the effect and any free-typed terpenes
+      const terps = new Set();
+      if (s.tjEffect && TJ_EFFECT_TERPENE[s.tjEffect]) terps.add(TJ_EFFECT_TERPENE[s.tjEffect]);
+      (s.tjTerpenes || '').split(/[,/]+/).map(t => t.trim()).forEach(t => {
+        const key = Object.keys(L.terpenes).find(k => k.toLowerCase() === t.toLowerCase());
+        if (key) terps.add(key);
+      });
+      terps.forEach(t => lines.push(`- ${t} terpene profile: ${L.terpenes[t]}`));
+      // Always offer the full set so the model can pick what fits
+      Object.keys(L.terpenes).forEach(t => { if (!terps.has(t)) lines.push(`- ${t} terpene profile: ${L.terpenes[t]}`); });
+      Object.entries(L.activities).forEach(([k, v]) => lines.push(`- ${k} activity page: ${v}`));
+      Object.entries(L.edibles).forEach(([k, v]) => lines.push(`- ${k} edibles: ${v}`));
+      lines.push(`- Terpene Journey home: ${L.site}`);
+      lines.push(`- About Terpene Journey: ${L.about}`);
+      lines.push(`- Brands we carry: ${L.brands}`);
+      lines.push(`- The blog: ${L.blog}`);
+      lines.push(`- Communities: ${L.communities}`);
+      return lines.join('\n');
+    },
+
     buildWriteUser(s) {
       const L = this.links;
       const effect = s.tjEffect ? `${s.tjEffect} (lead terpene: ${TJ_EFFECT_TERPENE[s.tjEffect] || ''})` : '';
@@ -795,11 +847,14 @@ Format all headings as markdown (# H1, ## H2, ### H3). Do NOT number the heading
         localLine,
         s.extra ? `Additional requirements: ${s.extra}` : '',
         ``,
-        `SOFT CTA: After the introduction or first section, weave in a gentle mid-article call to action inviting the reader to a relevant next step. Use a markdown link, for example [try Terp Genie](${L.terpGenie}), [build your Entourage](${L.entourage}), or [browse the live menu](${L.menu}). Close the article with a second soft CTA in the same spirit, helpful and never pushy. Keep CTAs light, never salesy.`,
+        `INTERNAL LINKS: Weave 3 to 6 of these real Terpene Journey pages into the body as natural markdown links, choosing the ones most relevant to the topic. Do not invent URLs, only use these:`,
+        this.linkLibraryText(s),
         ``,
-        `AUTHOR SECTION: Before the FAQs section, include an ## About the Author section with this exact content, do not rewrite it:`,
-        `**${s.author.name}**, *${s.author.role} at Terpene Journey*`,
-        s.author.bio,
+        `SOFT CTA: After the introduction or first section, weave in a gentle mid-article call to action pointing to the single most relevant page above (for example the matching terpene profile or "Be" activity page). Use a natural markdown link. Close the article with a second soft CTA in the same spirit, inviting the reader to explore Terpene Journey, build their entourage, or visit the team. Helpful, never pushy, never salesy.`,
+        ``,
+        s.author && s.author.bio
+          ? `AUTHOR SECTION: Before the FAQs section, include an ## About the Author section with this exact content, do not rewrite it:\n**${s.author.name}**, *${s.author.role} at Terpene Journey*\n${s.author.bio}`
+          : `BYLINE: Attribute the article to ${s.author ? s.author.name : 'the Terpene Journey team'}. Do not invent an author bio.`,
         ``,
         `Write it now, no preamble.`
       ];
@@ -807,7 +862,7 @@ Format all headings as markdown (# H1, ## H2, ### H3). Do NOT number the heading
     },
 
     // ----- Stage 3: internal links -----
-    linkPlaceholder: 'https://terpenejourney.com/menu\tThe live product menu, shop by terpene and effect\nhttps://terpenejourney.com/terp-genie\tTerp Genie, our terpene recommendation tool\nhttps://terpenejourney.com/effects/be-sleepy\tThe Be Sleepy effect/activity page (myrcene, linalool)',
+    linkPlaceholder: 'https://www.terpenejourney.com/cannabis-terpene/myrcene\tMyrcene terpene profile (calm, sedate)\nhttps://www.terpenejourney.com/cannabis-activities/be-sleepy\tBe Sleepy activity page\nhttps://terpenejourney.com/cannabis/calming-edibles\tCalming edibles category\nhttps://www.terpenejourney.com/about\tAbout Terpene Journey',
     linkSys1: 'You are an SEO strategist for Terpene Journey, a terpene-first cannabis dispensary. Identify natural internal linking opportunities. Return valid JSON only, no markdown, no explanation.',
     linkSys2: 'You are a content editor at Terpene Journey. Apply internal links naturally. Return only the updated markdown blog post, no preamble.',
 
